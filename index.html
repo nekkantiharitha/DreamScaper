@@ -1045,3 +1045,40 @@
     </script>
 </body>
 </html>
+<style>
+  .back-arrow-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999; /* Keeps it on top of all other elements */
+  }
+
+  .back-arrow-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+    backdrop-filter: blur(5px); /* Gives it a modern glass effect */
+    color: #ffffff; /* White arrow color */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%; /* Makes it a circle */
+    text-decoration: none;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Hover effect */
+  .back-arrow-btn:hover {
+    background-color: #ffffff;
+    color: #111111; /* Arrow turns dark on hover */
+    transform: scale(1.1); /* Slightly grows */
+  }
+</style>
+
+<div class="back-arrow-container">
+  <a href="index.html" class="back-arrow-btn" title="Go back to Welcome Page">
+    &#8592; </a>
+</div>
