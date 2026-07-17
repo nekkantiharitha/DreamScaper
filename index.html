@@ -1194,3 +1194,166 @@
     }
   });
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+  .gallery-save-panel {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    border-radius: 12px;
+    color: white;
+    font-family: sans-serif;
+    max-width: 300px;
+    margin: 20px auto;
+    text-align: center;
+  }
+  .gallery-input {
+    width: 90%;
+    padding: 8px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
+  }
+  .gallery-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+    width: 100%;
+    margin-top: 5px;
+  }
+  .gallery-btn:hover {
+    background: #45a049;
+  }
+  .hidden {
+    display: none !important;
+  }
+</style>
+
+<div class="gallery-save-panel">
+  <div id="login-section">
+    <h3>Sign In to DreamScaper</h3>
+    <input type="text" id="login-username" class="gallery-input" placeholder="Enter a Username...">
+    <button id="btn-login" class="gallery-btn">Sign In</button>
+  </div>
+
+  <div id="dashboard-section" class="hidden">
+    <h3 id="welcome-message">Welcome, Dreamer!</h3>
+    <button id="btn-save-dream" class="gallery-btn">Save Picture Forever</button>
+  </div>
+  
+  <p id="save-status" style="font-size: 12px; margin-top: 10px;"></p>
+</div>
+
+<script>
+  // Your web app's Firebase configuration
+  // !!! REPLACE THIS WITH YOUR CONFIG FROM YOUR FIREBASE CONSOLE !!!
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Elements
+  const loginSection = document.getElementById('login-section');
+  const dashboardSection = document.getElementById('dashboard-section');
+  const loginUsernameInput = document.getElementById('login-username');
+  const welcomeMessage = document.getElementById('welcome-message');
+  const statusText = document.getElementById('save-status');
+
+  // CHECK IF USER IS ALREADY SIGNED IN ON THIS DEVICE
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedUsername = localStorage.getItem('dreamscaper_user');
+    
+    if (savedUsername) {
+      showDashboard(savedUsername);
+    }
+  });
+
+  // Handle Sign In (Save to device)
+  document.getElementById('btn-login').addEventListener('click', () => {
+    const username = loginUsernameInput.value.trim();
+    if (!username) {
+      statusText.innerText = "❌ Please enter a username!";
+      statusText.style.color = "#ff4a4a";
+      return;
+    }
+
+    // Save username permanently to the browser's storage
+    localStorage.setItem('dreamscaper_user', username);
+    showDashboard(username);
+    statusText.innerText = `Signed in as @${username}`;
+    statusText.style.color = "#4CAF50";
+  });
+
+  // Handle Saving to Firebase Database
+  document.getElementById('btn-save-dream').addEventListener('click', async () => {
+    const username = localStorage.getItem('dreamscaper_user');
+    
+    // Target the generated image (Adjust selector if your image has a different class/ID)
+    const dreamImage = document.querySelector('#dream-image-id') || document.querySelector('.generated-image');
+    
+    if (!dreamImage || !dreamImage.src) {
+      statusText.innerText = "❌ No dream photo found to save yet!";
+      statusText.style.color = "#ff4a4a";
+      return;
+    }
+
+    statusText.innerText = "Saving to eternity...";
+    statusText.style.color = "#ffeb3b";
+
+    try {
+      await db.collection("dream_galleries").add({
+        username: username,
+        imageUrl: dreamImage.src,
+        savedAt: new Date()
+      });
+
+      statusText.innerText = "Saved successfully to your gallery!";
+      statusText.style.color = "#4CAF50";
+    } catch (error) {
+      console.error(error);
+      statusText.innerText = "❌ Connection Error. Check your Firebase Keys.";
+      statusText.style.color = "#ff4a4a";
+    }
+  });
+
+  // Helper functions to change views
+  function showDashboard(username) {
+    loginSection.classList.add('hidden');
+    dashboardSection.classList.remove('hidden');
+    welcomeMessage.innerText = `Logged in as @${username}`;
+  }
+
+  // INTEGRATING WITH YOUR DROPDOWN SIGN OUT BUTTON
+  // This listens for when the user clicks the "Sign Out" button in your dropdown
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'btn-sign-out') {
+      // Clear username from browser memory
+      localStorage.removeItem('dreamscaper_user');
+      
+      // Reset UI back to login screen
+      dashboardSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+      loginUsernameInput.value = '';
+      statusText.innerText = "Signed out successfully.";
+      statusText.style.color = "#ffffff";
+    }
+  });
+</script>
