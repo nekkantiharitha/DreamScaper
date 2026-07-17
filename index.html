@@ -1045,43 +1045,7 @@
     </script>
 </body>
 </html>
-<style>
-  .back-arrow-container {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 9999; /* Keeps it on top of all other elements */
-  }
 
-  .back-arrow-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
-    backdrop-filter: blur(5px); /* Gives it a modern glass effect */
-    color: #ffffff; /* White arrow color */
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 50%; /* Makes it a circle */
-    text-decoration: none;
-    font-size: 24px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Hover effect */
-  .back-arrow-btn:hover {
-    background-color: #ffffff;
-    color: #111111; /* Arrow turns dark on hover */
-    transform: scale(1.1); /* Slightly grows */
-  }
-</style>
-
-<div class="back-arrow-container">
-  <a href="index.html" class="back-arrow-btn" title="Go back to Welcome Page">
-    &#8592; </a>
-</div>
 <style>
   /* 1. Target your existing logo (Adjust the selector if your logo has a different class) */
   /* This ensures the container stays in the top right corner */
@@ -1357,3 +1321,153 @@
     }
   });
 </script>
+<style>
+  /* 1. Target your existing logo (Adjust the selector if your logo has a different class) */
+  /* This ensures the container stays in the top right corner */
+  .logo-dropdown-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000; /* Keeps it on top of everything */
+    display: inline-block;
+  }
+
+  /* Style for the dropdown menu itself */
+  .logo-dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+    background-color: rgba(255, 255, 255, 0.15); /* Match the glass look */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    min-width: 160px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* Show the dropdown when it has the 'active' class */
+  .logo-dropdown-menu.active {
+    display: block;
+  }
+
+  /* Dropdown links/options */
+  .logo-dropdown-item {
+    color: #ffffff;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-family: sans-serif;
+    font-size: 14px;
+    transition: background 0.2s ease;
+    cursor: pointer;
+  }
+
+  .logo-dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Divider line between options */
+  .logo-dropdown-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Change '.top-right-logo' to whatever class or ID your actual logo image/button uses
+    const logo = document.querySelector('.top-right-logo') || document.querySelector('header img') || document.querySelector('#logo');
+    
+    if (logo) {
+      // Create the structure dynamically around or near the logo
+      const container = document.createElement('div');
+      container.className = 'logo-dropdown-container';
+      
+      // Move the logo inside our wrapper container so positioning works perfectly
+      logo.parentNode.insertBefore(container, logo);
+      container.appendChild(logo);
+      
+      // Create the dropdown menu element
+      const menu = document.createElement('div');
+      menu.className = 'logo-dropdown-menu';
+      menu.innerHTML = `
+        <a href="#change-account" class="logo-dropdown-item" id="btn-change-account">Change Account</a>
+        <div class="logo-dropdown-divider"></div>
+        <a href="#sign-out" class="logo-dropdown-item" id="btn-sign-out" style="color: #ff4a4a;">Sign Out</a>
+      `;
+      container.appendChild(menu);
+
+      // Toggle menu on logo click
+      logo.style.cursor = 'pointer';
+      logo.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('active');
+      });
+
+      // Close menu if user clicks anywhere else on the screen
+      document.addEventListener('click', () => {
+        menu.classList.remove('active');
+      });
+
+      // Optional: Add actions when options are clicked
+      document.getElementById('btn-change-account').addEventListener('click', (e) => {
+        // e.preventDefault();
+        // Add your change account logic here later
+        alert('Change Account clicked!'); 
+      });
+
+      document.getElementById('btn-sign-out').addEventListener('click', (e) => {
+        // e.preventDefault();
+        // Add your sign out logic here later
+        alert('Sign Out clicked!');
+      });
+    }
+  });
+</script>  
+<style>
+  .back-to-home-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 9999; /* Keeps it on top of everything else */
+  }
+
+  .back-to-home-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background-color: rgba(255, 255, 255, 0.2); /* Glass look */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    color: #ffffff; /* White arrow */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%; /* Circle shape */
+    text-decoration: none;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Hover effect */
+  .back-to-home-btn:hover {
+    background-color: #ffffff;
+    color: #111111; /* Changes arrow to dark gray/black on hover */
+    transform: scale(1.1); /* Gently pops out */
+  }
+</style>
+
+<div class="back-to-home-container">
+  <a href="index.html" class="back-to-home-btn" title="Go back to Home Screen">
+    &#8592; </a>
+</div>
