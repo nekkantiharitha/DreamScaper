@@ -191,15 +191,48 @@
             backdrop-filter: blur(15px);
             z-index: 100;
             transition: left 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-            padding: 80px 24px 24px 24px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .sidebar.open {
             left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-back-arrow {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 26px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-back-arrow:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         .sidebar-item {
@@ -253,7 +286,7 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* List Items styling (Journal entries and items) */
+        /* List Items styling */
         .entry-list {
             display: flex;
             flex-direction: column;
@@ -275,6 +308,7 @@
 
         .entry-details {
             flex-grow: 1;
+            cursor: pointer;
         }
 
         .entry-title {
@@ -326,7 +360,7 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* Gallery PDF Grid Layout */
+        /* Gallery Grid Layout */
         .gallery-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -350,6 +384,7 @@
             aspect-ratio: 3/4;
             background: rgba(0,0,0,0.2);
             position: relative;
+            cursor: pointer;
         }
 
         .gallery-img {
@@ -473,7 +508,7 @@
             width: 100%;
         }
 
-        /* Modal Overlay for save-image preview */
+        /* Modal Overlay for preview */
         .modal {
             display: none;
             position: absolute;
@@ -531,6 +566,14 @@
         </header>
 
         <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-back-arrow" onclick="closeSidebarToHome()" title="Back to Welcome Page">←</button>
+                <span class="sidebar-title">Menu</span>
+                <span style="width: 32px;"></span>
+            </div>
+            <div class="sidebar-item" onclick="navigateTo('screenHome')">
+                <span class="sidebar-icon">🏠</span> Welcome Home
+            </div>
             <div class="sidebar-item" onclick="navigateTo('screenMyJournal')">
                 <span class="sidebar-icon">📄</span> My Journal
             </div>
@@ -581,7 +624,6 @@
             <button class="revert-bg-btn" id="revertBtn" onclick="revertToOriginalBackground()">Change Back to Original</button>
             <div class="centered-content">
                 <h1 class="welcome-title" id="welcomeMsg">Welcome to Dreamscaper</h1>
-                
                 <button class="glow-btn btn-green" onclick="navigateTo('screenAddDream')">+ Create a New Dream</button>
                 <button class="glow-btn btn-blue" onclick="navigateTo('screenJournalCreate')">+ Add Page to the Journal</button>
                 <button class="glow-btn btn-yellow" onclick="navigateTo('screenGallery')">Go to Dream Gallery</button>
@@ -608,7 +650,7 @@
                     </select>
                 </div>
                 <button class="glow-btn btn-green" onclick="generateDreamscape()">Paint & Save to Gallery</button>
-                
+
                 <div id="generatorLoading" style="display:none; text-align: center; margin-top: 15px;">
                     <p style="color: #ffeda6;">Painting your subconscious... please wait...</p>
                 </div>
@@ -653,7 +695,7 @@
 
         <div class="modal" id="previewModal">
             <button class="close-modal" onclick="closeModal()">×</button>
-            <img class="modal-img" id="modalImg" src="">
+            <img class="modal-img" id="modalImg" src="" alt="Preview">
             <p class="modal-instructions" id="modalInstructions"></p>
         </div>
 
@@ -662,36 +704,33 @@
     <div class="toast" id="toast">Notification text</div>
 
     <script>
-        // API CONFIGURATION (Put your real Groq key here)
-        const GROQ_API_KEY = "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";
+        // API CONFIGURATION
+        const GROQ_API_KEY = "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"; 
 
         // Global User Data States
-        let currentUser = {
-            email: "",
-            username: ""
-        };
+        let currentUser = { email: "", username: "" };
 
         // Simulated Database saved into browser localStorage
         let journalData = JSON.parse(localStorage.getItem('dreamscaper_journal')) || [];
         let galleryData = JSON.parse(localStorage.getItem('dreamscaper_gallery')) || [];
 
-        // Global navigation initialization
+        // Navigation Controller
         function navigateTo(screenId) {
             document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-            
-            // Toggle visibility of global application header based on screen
+
+            // Header visibility
             const noHeaderScreens = ['screenLogin', 'screenCodeVerify', 'screenUsername'];
             if(noHeaderScreens.includes(screenId)) {
                 document.getElementById('globalHeader').style.display = 'none';
             } else {
                 document.getElementById('globalHeader').style.display = 'flex';
             }
-            
-            // Side panel close trigger on page switches
+
+            // Close sidebar on page switches
             document.getElementById('sidebar').classList.remove('open');
 
-            // Render components specifically
+            // Render view-specific data
             if (screenId === 'screenMyJournal') renderJournal();
             if (screenId === 'screenGallery') renderGallery();
         }
@@ -700,7 +739,13 @@
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // Notification utility
+        // Close side drawer arrow action -> Navigate straight to Welcome Page
+        function closeSidebarToHome() {
+            document.getElementById('sidebar').classList.remove('open');
+            navigateTo('screenHome');
+        }
+
+        // Toast Notifications
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -710,7 +755,7 @@
             }, 3000);
         }
 
-        /* 1. LOGIN UTILS */
+        /* 1. LOGIN SYSTEM */
         function sendLoginCode() {
             const email = document.getElementById('loginEmail').value;
             if(!email) return showToast("Please write down an email address first!");
@@ -723,7 +768,6 @@
             const code = document.getElementById('verifyCode').value;
             if(code.trim() === "") return showToast("Please input your verification code!");
             
-            // Automatically determine username
             const cachedName = localStorage.getItem(`dreamscaper_username_${currentUser.email}`);
             if(cachedName) {
                 currentUser.username = cachedName;
@@ -744,8 +788,7 @@
         function loginSuccess() {
             document.getElementById('welcomeMsg').textContent = `Welcome to Dreamscaper, ${currentUser.username}`;
             document.getElementById('profileBadge').textContent = currentUser.username.charAt(0).toUpperCase();
-            
-            // Check if user has background customization saved
+
             const savedBg = localStorage.getItem(`dreamscaper_bg_${currentUser.email}`);
             if (savedBg) {
                 document.getElementById('bgLayer').style.backgroundImage = `url('${savedBg}')`;
@@ -756,18 +799,19 @@
             showToast("Logged in successfully!");
         }
 
-        /* 2. JOURNALING MECHANICS */
+        /* 2. JOURNAL MANAGEMENT */
         function renderJournal() {
             const listContainer = document.getElementById('journalList');
             listContainer.innerHTML = '';
             
             const userEntries = journalData.filter(e => e.email === currentUser.email);
+            
             if(userEntries.length === 0) {
                 listContainer.innerHTML = `<p style="text-align:center; opacity:0.5; margin-top:40px;">No diary entries yet. Start by writing one!</p>`;
                 return;
             }
 
-            userEntries.forEach((entry, index) => {
+            userEntries.forEach((entry) => {
                 const card = document.createElement('div');
                 card.className = 'entry-card';
                 card.innerHTML = `
@@ -775,8 +819,8 @@
                         <div class="entry-title">${entry.title}</div>
                         <div class="entry-date">${entry.date}</div>
                     </div>
-                    <button class="options-btn" onclick="toggleDropdown(event, ${entry.id})">⋮</button>
-                    <div class="dropdown-menu" id="dropdown-${entry.id}">
+                    <button class="options-btn" onclick="toggleDropdown(event, 'j-${entry.id}')">⋮</button>
+                    <div class="dropdown-menu" id="dropdown-j-${entry.id}">
                         <button onclick="renameJournal(${entry.id})">Rename</button>
                         <button onclick="deleteJournal(${entry.id})">Delete</button>
                     </div>
@@ -788,8 +832,9 @@
         function saveJournalPage() {
             const title = document.getElementById('journalTitle').value;
             const content = document.getElementById('journalContent').value;
+            
             if(!title || !content) return showToast("Title and contents must be filled!");
-
+            
             const newEntry = {
                 id: Date.now(),
                 email: currentUser.email,
@@ -803,7 +848,6 @@
             
             document.getElementById('journalTitle').value = '';
             document.getElementById('journalContent').value = '';
-            
             navigateTo('screenMyJournal');
             showToast("Journal entry saved!");
         }
@@ -837,7 +881,7 @@
             }
         }
 
-        /* 3. AI GENERATOR (DREAMSCAPER IMAGING) */
+        /* 3. AI IMAGE GENERATOR */
         async function generateDreamscape() {
             const title = document.getElementById('dreamTitle').value;
             const keywords = document.getElementById('dreamKeywords').value;
@@ -849,11 +893,9 @@
             loadingDiv.style.display = 'block';
 
             try {
-                // Pollinations.ai free imagery generator (using URL formatting)
                 const safePrompt = encodeURIComponent(`${keywords}, atmospheric lighting, ${style}`);
                 const imageUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=600&height=800&nologo=true&seed=${Math.floor(Math.random() * 999999)}`;
 
-                // Preload the painted image to browser cache to ensure smooth transition
                 const preloader = new Image();
                 preloader.src = imageUrl;
                 preloader.onload = () => {
@@ -869,7 +911,6 @@
                     galleryData.push(newDream);
                     localStorage.setItem('dreamscaper_gallery', JSON.stringify(galleryData));
 
-                    // Reset values
                     document.getElementById('dreamTitle').value = '';
                     document.getElementById('dreamKeywords').value = '';
                     loadingDiv.style.display = 'none';
@@ -883,12 +924,13 @@
             }
         }
 
-        /* 4. GALLERY RENDER AND OPTIONS */
+        /* 4. GALLERY RENDER AND CONTROLS */
         function renderGallery() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
 
             const userDreams = galleryData.filter(d => d.email === currentUser.email);
+
             if(userDreams.length === 0) {
                 grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; opacity:0.5; margin-top:40px;">Your gallery is empty. Paint your first dream!</p>`;
                 return;
@@ -898,16 +940,16 @@
                 const card = document.createElement('div');
                 card.className = 'gallery-card';
                 card.innerHTML = `
-                    <div class="gallery-img-container" onclick="openImageModal('${dream.img}', 'Tap and hold this painting of \\'${dream.title}\\' to save it directly to your mobile device!')">
-                        <img class="gallery-img" src="${dream.img}">
+                    <div class="gallery-img-container" onclick="openImageModal('${dream.img}', 'Tap and hold this painting of \\'${dream.title}\\' to save it to your device!')">
+                        <img class="gallery-img" src="${dream.img}" alt="${dream.title}">
                     </div>
                     <div class="gallery-info">
                         <div>
                             <div style="font-size:15px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;">${dream.title}</div>
                             <div style="font-size:10px; color:rgba(255,255,255,0.55);">${dream.date}</div>
                         </div>
-                        <button class="options-btn" style="padding:4px;" onclick="toggleDropdown(event, ${dream.id})">⋮</button>
-                        <div class="dropdown-menu" id="dropdown-${dream.id}">
+                        <button class="options-btn" style="padding:4px;" onclick="toggleDropdown(event, 'g-${dream.id}')">⋮</button>
+                        <div class="dropdown-menu" id="dropdown-g-${dream.id}">
                             <button onclick="renameDream(${dream.id})">Rename</button>
                             <button onclick="setAppBackground('${dream.img}')">Add as Background</button>
                             <button onclick="deleteDream(${dream.id})">Delete</button>
@@ -940,7 +982,7 @@
             }
         }
 
-        /* 5. BACKGROUND CUSTOMIZATION MECHANICS */
+        /* 5. BACKGROUND CUSTOMIZATION */
         function setAppBackground(imgUrl) {
             document.getElementById('bgLayer').style.backgroundImage = `url('${imgUrl}')`;
             localStorage.setItem(`dreamscaper_bg_${currentUser.email}`, imgUrl);
@@ -955,23 +997,23 @@
             showToast("Reverted back to default background!");
         }
 
-        /* 6. DROPDOWN UTILS */
+        /* 6. DROPDOWN CONTROLS */
         function toggleDropdown(event, id) {
             event.stopPropagation();
-            // Close all other dropdown menu elements
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
                 if(menu.id !== `dropdown-${id}`) menu.style.display = 'none';
             });
             const menu = document.getElementById(`dropdown-${id}`);
-            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+            if (menu) {
+                menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+            }
         }
 
-        // Close dropdown when user clicks elsewhere
         document.addEventListener('click', () => {
             document.querySelectorAll('.dropdown-menu').forEach(menu => menu.style.display = 'none');
         });
 
-        /* 7. PREVIEW MODAL FUNCTIONS */
+        /* 7. PREVIEW MODAL */
         function openImageModal(imgSrc, message) {
             const modal = document.getElementById('previewModal');
             document.getElementById('modalImg').src = imgSrc;
@@ -983,7 +1025,7 @@
             document.getElementById('previewModal').style.display = 'none';
         }
 
-        /* 8. GROQ PERSONAL ASSISTANT CHAT ROUTINES */
+        /* 8. PERSONAL ASSISTANT CHAT */
         async function sendAssistantMsg() {
             const input = document.getElementById('chatInput');
             const logs = document.getElementById('chatLogs');
@@ -991,7 +1033,6 @@
 
             if(!messageText) return;
 
-            // Append user text bubble
             const userBubble = document.createElement('div');
             userBubble.className = 'msg msg-user';
             userBubble.textContent = messageText;
@@ -999,16 +1040,15 @@
             logs.scrollTop = logs.scrollHeight;
             input.value = "";
 
-            if(GROQ_API_KEY === "YOUR_GROQ_API_KEY_HERE" || !GROQ_API_KEY) {
+            if(!GROQ_API_KEY) {
                 const errBubble = document.createElement('div');
                 errBubble.className = 'msg msg-bot';
-                errBubble.innerHTML = "🌸 <i>(System Note: Groq API key is missing from the code! Please add your API key into the index.html script tags to allow live conversations)</i>";
+                errBubble.innerHTML = "🌸 <i>(System Note: Groq API key is missing!)</i>";
                 logs.appendChild(errBubble);
                 logs.scrollTop = logs.scrollHeight;
                 return;
             }
 
-            // Append "Typing..." temporary status bubble
             const botBubble = document.createElement('div');
             botBubble.className = 'msg msg-bot';
             botBubble.textContent = "🌸 Typing...";
@@ -1027,7 +1067,7 @@
                         messages: [
                             {
                                 role: "system",
-                                content: `You are a cozy, warm, and helpful AI assistant named Flora built into the DreamScaper app. Your personality is gentle, starry, and comforting. Help users interpret dreams, offer cozy thoughts, and maintain an empathetic, slightly magical tone.`
+                                content: `You are a cozy, warm, and helpful AI assistant named Flora built into the DreamScaper app. Your personality is gentle, starry, and comforting.`
                             },
                             { role: "user", content: messageText }
                         ]
@@ -1045,429 +1085,3 @@
     </script>
 </body>
 </html>
-
-<style>
-  /* 1. Target your existing logo (Adjust the selector if your logo has a different class) */
-  /* This ensures the container stays in the top right corner */
-  .logo-dropdown-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000; /* Keeps it on top of everything */
-    display: inline-block;
-  }
-
-  /* Style for the dropdown menu itself */
-  .logo-dropdown-menu {
-    display: none; /* Hidden by default */
-    position: absolute;
-    right: 0;
-    top: 100%;
-    margin-top: 8px;
-    background-color: rgba(255, 255, 255, 0.15); /* Match the glass look */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    min-width: 160px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    animation: fadeIn 0.2s ease;
-  }
-
-  /* Show the dropdown when it has the 'active' class */
-  .logo-dropdown-menu.active {
-    display: block;
-  }
-
-  /* Dropdown links/options */
-  .logo-dropdown-item {
-    color: #ffffff;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    font-family: sans-serif;
-    font-size: 14px;
-    transition: background 0.2s ease;
-    cursor: pointer;
-  }
-
-  .logo-dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-
-  /* Divider line between options */
-  .logo-dropdown-divider {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-</style>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // 1. Change '.top-right-logo' to whatever class or ID your actual logo image/button uses
-    const logo = document.querySelector('.top-right-logo') || document.querySelector('header img') || document.querySelector('#logo');
-    
-    if (logo) {
-      // Create the structure dynamically around or near the logo
-      const container = document.createElement('div');
-      container.className = 'logo-dropdown-container';
-      
-      // Move the logo inside our wrapper container so positioning works perfectly
-      logo.parentNode.insertBefore(container, logo);
-      container.appendChild(logo);
-      
-      // Create the dropdown menu element
-      const menu = document.createElement('div');
-      menu.className = 'logo-dropdown-menu';
-      menu.innerHTML = `
-        <a href="#change-account" class="logo-dropdown-item" id="btn-change-account">Change Account</a>
-        <div class="logo-dropdown-divider"></div>
-        <a href="#sign-out" class="logo-dropdown-item" id="btn-sign-out" style="color: #ff4a4a;">Sign Out</a>
-      `;
-      container.appendChild(menu);
-
-      // Toggle menu on logo click
-      logo.style.cursor = 'pointer';
-      logo.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menu.classList.toggle('active');
-      });
-
-      // Close menu if user clicks anywhere else on the screen
-      document.addEventListener('click', () => {
-        menu.classList.remove('active');
-      });
-
-      // Optional: Add actions when options are clicked
-      document.getElementById('btn-change-account').addEventListener('click', (e) => {
-        // e.preventDefault();
-        // Add your change account logic here later
-        alert('Change Account clicked!'); 
-      });
-
-      document.getElementById('btn-sign-out').addEventListener('click', (e) => {
-        // e.preventDefault();
-        // Add your sign out logic here later
-        alert('Sign Out clicked!');
-      });
-    }
-  });
-</script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-<style>
-  .gallery-save-panel {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 20px;
-    border-radius: 12px;
-    color: white;
-    font-family: sans-serif;
-    max-width: 300px;
-    margin: 20px auto;
-    text-align: center;
-  }
-  .gallery-input {
-    width: 90%;
-    padding: 8px;
-    margin: 10px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background: rgba(255, 255, 255, 0.8);
-    color: #333;
-  }
-  .gallery-btn {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
-    width: 100%;
-    margin-top: 5px;
-  }
-  .gallery-btn:hover {
-    background: #45a049;
-  }
-  .hidden {
-    display: none !important;
-  }
-</style>
-
-<div class="gallery-save-panel">
-  <div id="login-section">
-    <h3>Sign In to DreamScaper</h3>
-    <input type="text" id="login-username" class="gallery-input" placeholder="Enter a Username...">
-    <button id="btn-login" class="gallery-btn">Sign In</button>
-  </div>
-
-  <div id="dashboard-section" class="hidden">
-    <h3 id="welcome-message">Welcome, Dreamer!</h3>
-    <button id="btn-save-dream" class="gallery-btn">Save Picture Forever</button>
-  </div>
-  
-  <p id="save-status" style="font-size: 12px; margin-top: 10px;"></p>
-</div>
-
-<script>
-  // Your web app's Firebase configuration
-  // !!! REPLACE THIS WITH YOUR CONFIG FROM YOUR FIREBASE CONSOLE !!!
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // Elements
-  const loginSection = document.getElementById('login-section');
-  const dashboardSection = document.getElementById('dashboard-section');
-  const loginUsernameInput = document.getElementById('login-username');
-  const welcomeMessage = document.getElementById('welcome-message');
-  const statusText = document.getElementById('save-status');
-
-  // CHECK IF USER IS ALREADY SIGNED IN ON THIS DEVICE
-  document.addEventListener('DOMContentLoaded', () => {
-    const savedUsername = localStorage.getItem('dreamscaper_user');
-    
-    if (savedUsername) {
-      showDashboard(savedUsername);
-    }
-  });
-
-  // Handle Sign In (Save to device)
-  document.getElementById('btn-login').addEventListener('click', () => {
-    const username = loginUsernameInput.value.trim();
-    if (!username) {
-      statusText.innerText = "❌ Please enter a username!";
-      statusText.style.color = "#ff4a4a";
-      return;
-    }
-
-    // Save username permanently to the browser's storage
-    localStorage.setItem('dreamscaper_user', username);
-    showDashboard(username);
-    statusText.innerText = `Signed in as @${username}`;
-    statusText.style.color = "#4CAF50";
-  });
-
-  // Handle Saving to Firebase Database
-  document.getElementById('btn-save-dream').addEventListener('click', async () => {
-    const username = localStorage.getItem('dreamscaper_user');
-    
-    // Target the generated image (Adjust selector if your image has a different class/ID)
-    const dreamImage = document.querySelector('#dream-image-id') || document.querySelector('.generated-image');
-    
-    if (!dreamImage || !dreamImage.src) {
-      statusText.innerText = "❌ No dream photo found to save yet!";
-      statusText.style.color = "#ff4a4a";
-      return;
-    }
-
-    statusText.innerText = "Saving to eternity...";
-    statusText.style.color = "#ffeb3b";
-
-    try {
-      await db.collection("dream_galleries").add({
-        username: username,
-        imageUrl: dreamImage.src,
-        savedAt: new Date()
-      });
-
-      statusText.innerText = "Saved successfully to your gallery!";
-      statusText.style.color = "#4CAF50";
-    } catch (error) {
-      console.error(error);
-      statusText.innerText = "❌ Connection Error. Check your Firebase Keys.";
-      statusText.style.color = "#ff4a4a";
-    }
-  });
-
-  // Helper functions to change views
-  function showDashboard(username) {
-    loginSection.classList.add('hidden');
-    dashboardSection.classList.remove('hidden');
-    welcomeMessage.innerText = `Logged in as @${username}`;
-  }
-
-  // INTEGRATING WITH YOUR DROPDOWN SIGN OUT BUTTON
-  // This listens for when the user clicks the "Sign Out" button in your dropdown
-  document.addEventListener('click', (e) => {
-    if (e.target && e.target.id === 'btn-sign-out') {
-      // Clear username from browser memory
-      localStorage.removeItem('dreamscaper_user');
-      
-      // Reset UI back to login screen
-      dashboardSection.classList.add('hidden');
-      loginSection.classList.remove('hidden');
-      loginUsernameInput.value = '';
-      statusText.innerText = "Signed out successfully.";
-      statusText.style.color = "#ffffff";
-    }
-  });
-</script>
-<style>
-  /* 1. Target your existing logo (Adjust the selector if your logo has a different class) */
-  /* This ensures the container stays in the top right corner */
-  .logo-dropdown-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000; /* Keeps it on top of everything */
-    display: inline-block;
-  }
-
-  /* Style for the dropdown menu itself */
-  .logo-dropdown-menu {
-    display: none; /* Hidden by default */
-    position: absolute;
-    right: 0;
-    top: 100%;
-    margin-top: 8px;
-    background-color: rgba(255, 255, 255, 0.15); /* Match the glass look */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    min-width: 160px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    animation: fadeIn 0.2s ease;
-  }
-
-  /* Show the dropdown when it has the 'active' class */
-  .logo-dropdown-menu.active {
-    display: block;
-  }
-
-  /* Dropdown links/options */
-  .logo-dropdown-item {
-    color: #ffffff;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    font-family: sans-serif;
-    font-size: 14px;
-    transition: background 0.2s ease;
-    cursor: pointer;
-  }
-
-  .logo-dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-
-  /* Divider line between options */
-  .logo-dropdown-divider {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-</style>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // 1. Change '.top-right-logo' to whatever class or ID your actual logo image/button uses
-    const logo = document.querySelector('.top-right-logo') || document.querySelector('header img') || document.querySelector('#logo');
-    
-    if (logo) {
-      // Create the structure dynamically around or near the logo
-      const container = document.createElement('div');
-      container.className = 'logo-dropdown-container';
-      
-      // Move the logo inside our wrapper container so positioning works perfectly
-      logo.parentNode.insertBefore(container, logo);
-      container.appendChild(logo);
-      
-      // Create the dropdown menu element
-      const menu = document.createElement('div');
-      menu.className = 'logo-dropdown-menu';
-      menu.innerHTML = `
-        <a href="#change-account" class="logo-dropdown-item" id="btn-change-account">Change Account</a>
-        <div class="logo-dropdown-divider"></div>
-        <a href="#sign-out" class="logo-dropdown-item" id="btn-sign-out" style="color: #ff4a4a;">Sign Out</a>
-      `;
-      container.appendChild(menu);
-
-      // Toggle menu on logo click
-      logo.style.cursor = 'pointer';
-      logo.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menu.classList.toggle('active');
-      });
-
-      // Close menu if user clicks anywhere else on the screen
-      document.addEventListener('click', () => {
-        menu.classList.remove('active');
-      });
-
-      // Optional: Add actions when options are clicked
-      document.getElementById('btn-change-account').addEventListener('click', (e) => {
-        // e.preventDefault();
-        // Add your change account logic here later
-        alert('Change Account clicked!'); 
-      });
-
-      document.getElementById('btn-sign-out').addEventListener('click', (e) => {
-        // e.preventDefault();
-        // Add your sign out logic here later
-        alert('Sign Out clicked!');
-      });
-    }
-  });
-</script>  
-<style>
-  .back-to-home-container {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 9999; /* Keeps it on top of everything else */
-  }
-
-  .back-to-home-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-    background-color: rgba(255, 255, 255, 0.2); /* Glass look */
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    color: #ffffff; /* White arrow */
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 50%; /* Circle shape */
-    text-decoration: none;
-    font-size: 24px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Hover effect */
-  .back-to-home-btn:hover {
-    background-color: #ffffff;
-    color: #111111; /* Changes arrow to dark gray/black on hover */
-    transform: scale(1.1); /* Gently pops out */
-  }
-</style>
-
-<div class="back-to-home-container">
-  <a href="index.html" class="back-to-home-btn" title="Go back to Home Screen">
-    &#8592; </a>
-</div>
