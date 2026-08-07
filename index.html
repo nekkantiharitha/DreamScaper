@@ -1163,3 +1163,33 @@
     </script>
 </body>
 </html>
+/* DOWNLOAD DREAM IMAGE FUNCTION */
+async function downloadDreamImage(imgUrl, dreamTitle) {
+    showToast("Preparing download...");
+    try {
+        // Fetch the image as a blob to bypass cross-origin restrictions
+        const response = await fetch(imgUrl);
+        const blob = await response.blob();
+        
+        // Create a temporary hidden download link
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        
+        // Clean the dream title to create a safe filename
+        const safeTitle = dreamTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        link.download = `DreamScaper_${safeTitle}.jpg`;
+        
+        // Trigger download click and cleanup
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+
+        showToast("📥 Dream image downloaded!");
+    } catch (error) {
+        // Fallback for mobile devices or restricted CORS policies
+        window.open(imgUrl, '_blank');
+        showToast("Opened image in new tab. Long press to save!");
+    }
+}
