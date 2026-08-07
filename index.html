@@ -271,6 +271,33 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
+        /* Push-to-Talk Voice Button Styling */
+        .mic-hold-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .mic-hold-btn:active, .mic-hold-btn.recording {
+            background: rgba(255, 77, 77, 0.25);
+            border-color: #ff4d4d;
+            color: #ff4d4d;
+            box-shadow: 0 0 12px rgba(255, 77, 77, 0.5);
+            transform: scale(0.98);
+        }
+
         /* Custom Date Row for Journaling */
         .date-input-row {
             display: flex;
@@ -661,7 +688,15 @@
                     <input type="text" id="dreamKeywords" class="input-field" placeholder="Describe key visual elements">
                 </div>
 
-                <div class="input-group" style="max-width: 100%;">
+                <button class="mic-hold-btn" id="micBtn" 
+                        onmousedown="startVoiceRecording()" 
+                        onmouseup="stopVoiceRecording()" 
+                        ontouchstart="startVoiceRecording(event)" 
+                        ontouchend="stopVoiceRecording(event)">
+                    <span id="micIcon">🎙️</span> <span id="micStatusText">Hold to speak keywords</span>
+                </button>
+
+                <div class="input-group" style="max-width: 100%; margin-top: 10px;">
                     <label>Dream Atmosphere / Mood:</label>
                     <div class="mood-chips-container" id="moodSelector">
                         <span class="mood-chip active" onclick="selectMood(this, 'Serene & Ethereal')">🌸 Serene</span>
@@ -760,7 +795,6 @@
     <div class="toast" id="toast">Notification text</div>
 
     <script>
-        // Enter your API Key below if using the AI Companion feature
         const GROQ_API_KEY = "";
 
         let currentUser = { email: "", username: "" };
@@ -770,6 +804,61 @@
         let screenHistory = [];
         let currentScreen = 'screenLogin';
         let selectedDreamMood = "Serene & Ethereal";
+
+        // Speech Recognition Setup
+        let recognition = null;
+        let isRecording = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                const input = document.getElementById('dreamKeywords');
+                input.value = transcript;
+            };
+
+            recognition.onerror = (event) => {
+                showToast("Voice recognition error: " + event.error);
+                stopVoiceRecording();
+            };
+        }
+
+        function startVoiceRecording(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (!recognition) return showToast("Speech recognition is not supported on this browser.");
+            if (isRecording) return;
+
+            try {
+                recognition.start();
+                isRecording = true;
+                const btn = document.getElementById('micBtn');
+                btn.classList.add('recording');
+                document.getElementById('micIcon').textContent = '🔴';
+                document.getElementById('micStatusText').textContent = 'Listening... Speak now';
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        function stopVoiceRecording(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (!recognition || !isRecording) return;
+
+            recognition.stop();
+            isRecording = false;
+            const btn = document.getElementById('micBtn');
+            btn.classList.remove('recording');
+            document.getElementById('micIcon').textContent = '🎙️';
+            document.getElementById('micStatusText').textContent = 'Hold to speak keywords';
+            showToast("Voice transcribed!");
+        }
 
         // Populate Date Dropdown (1 to 31) & Default Year
         document.addEventListener('DOMContentLoaded', () => {
