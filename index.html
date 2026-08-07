@@ -1085,3 +1085,52 @@
     </script>
 </body>
 </html>
+<div class="screen" id="screenAddDream">
+    <div class="image-generator-container">
+        <h2 style="font-size: 26px; font-family: 'Times New Roman', serif; text-shadow: 0 0 10px rgba(168,230,207,0.3);">
+            ✨ Paint a New Dream
+        </h2>
+        
+        <div class="input-group" style="max-width: 100%;">
+            <label>Dream Title</label>
+            <input type="text" id="dreamTitle" class="input-field" placeholder="e.g. Floating Above the Glass Ocean">
+        </div>
+
+        <div class="input-group" style="max-width: 100%;">
+            <label>Key Elements & Visuals</label>
+            <input type="text" id="dreamKeywords" class="input-field" placeholder="e.g. glowing jellyfish, purple sky, ancient ruins">
+        </div>
+
+        <div class="input-group" style="max-width: 100%;">
+            <label>Dream Mood / Atmosphere</label>
+            <div class="mood-chips-container" id="moodSelector">
+                <span class="mood-chip active" onclick="selectMood(this, 'Ethereal & Serene')">🌸 Serene</span>
+                <span class="mood-chip" onclick="selectMood(this, 'Mystical & Cosmic')">✨ Mystical</span>
+                <span class="mood-chip" onclick="selectMood(this, 'Vibrant & Surreal')">🌈 Surreal</span>
+                <span class="mood-chip" onclick="selectMood(this, 'Dark & Mysterious')">🌙 Dark</span>
+            </div>
+        </div>
+
+        <div class="input-group" style="max-width: 100%;">
+            <label>Select Artistic Style</label>
+            <select id="artStyle" class="dropdown-select">
+                <option value="anime style, vibrant colors, Studio Ghibli inspired, high quality">Anime / Fantasy Visual</option>
+                <option value="textured oil painting, rich deep colors, starry surreal background, brush strokes">Classic Oil Painting</option>
+                <option value="soft chalk pastel painting, dreamlike, soft glowing ambient light">Pastel Soft Dream</option>
+                <option value="cyberpunk neon lighting, glowing elements, ultra detailed digital art">Cyberpunk / Sci-Fi Glow</option>
+                <option value="surreal watercolor art, fluid colors, ethereal atmosphere">Surreal Watercolor</option>
+            </select>
+        </div>
+
+        <button class="glow-btn btn-green" id="btnPaintDream" onclick="generateDreamscape()">
+            🎨 Manifest & Save Dream
+        </button>
+
+        <div id="generatorLoading" class="dream-loader" style="display:none;">
+            <div class="spinner"></div>
+            <p style="color: #ffeda6; margin-top: 10px; font-style: italic;">
+                Summoning your subconscious vision...
+            </p>
+        </div>
+    </div>
+</div>
