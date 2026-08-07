@@ -341,6 +341,7 @@
 
         .entry-details {
             flex-grow: 1;
+            cursor: pointer;
         }
 
         .entry-title {
@@ -416,6 +417,7 @@
             aspect-ratio: 3/4;
             background: rgba(0,0,0,0.2);
             position: relative;
+            cursor: pointer;
         }
 
         .gallery-img {
@@ -758,7 +760,8 @@
     <div class="toast" id="toast">Notification text</div>
 
     <script>
-        const GROQ_API_KEY = "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";
+        // Enter your API Key below if using the AI Companion feature
+        const GROQ_API_KEY = "";
 
         let currentUser = { email: "", username: "" };
         let journalData = JSON.parse(localStorage.getItem('dreamscaper_journal')) || [];
@@ -1057,29 +1060,39 @@
             });
         }
 
-        async function downloadDreamImage(imgUrl, dreamTitle) {
-            showToast("Preparing download...");
-            try {
-                const response = await fetch(imgUrl);
-                const blob = await response.blob();
-                
-                const blobUrl = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                
-                const safeTitle = dreamTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                link.download = `DreamScaper_${safeTitle}.jpg`;
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(blobUrl);
+        /* RELIABLE CROSS-PLATFORM DOWNLOAD */
+        function downloadDreamImage(imgUrl, dreamTitle) {
+            showToast("Preparing image download...");
+            
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imgUrl;
 
-                showToast("📥 Dream image downloaded!");
-            } catch (error) {
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+
+                canvas.toBlob(function(blob) {
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    const safeTitle = dreamTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    link.download = `DreamScaper_${safeTitle}.jpg`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                    showToast("📥 Dream image downloaded!");
+                }, 'image/jpeg');
+            };
+
+            img.onerror = function() {
                 window.open(imgUrl, '_blank');
                 showToast("Opened image in new tab. Long press to save!");
-            }
+            };
         }
 
         function deleteDream(id) {
@@ -1149,7 +1162,7 @@
             if(!GROQ_API_KEY) {
                 const errBubble = document.createElement('div');
                 errBubble.className = 'msg msg-bot';
-                errBubble.innerHTML = "🌸 <i>(System Note: Please add your Groq API key in index.html to chat with the assistant!)</i>";
+                errBubble.innerHTML = "🌸 <i>(System Note: Add your Groq API key to the GROQ_API_KEY variable in index.html to activate AI responses!)</i>";
                 logs.appendChild(errBubble);
                 logs.scrollTop = logs.scrollHeight;
                 return;
