@@ -67,7 +67,7 @@
             display: flex;
         }
 
-        /* Custom Header styling with Left Controls (Menu & Back Arrow) */
+        /* Custom Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -103,7 +103,6 @@
             transition: 0.3s;
         }
 
-        /* Back Arrow Icon next to hamburger menu */
         .header-back-btn {
             background: none;
             border: none;
@@ -247,7 +246,7 @@
         .input-group {
             width: 100%;
             max-width: 320px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -271,7 +270,6 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* FIXED: Push-to-Talk Voice Button Styling */
         .mic-hold-btn {
             width: 100%;
             max-width: 100%;
@@ -295,15 +293,6 @@
             touch-action: manipulation;
         }
 
-        .mic-hold-btn:active, .mic-hold-btn.recording {
-            background: rgba(255, 77, 77, 0.25);
-            border-color: #ff4d4d;
-            color: #ff4d4d;
-            box-shadow: 0 0 12px rgba(255, 77, 77, 0.5);
-            transform: scale(0.98);
-        }
-
-        /* Custom Date Row for Journaling */
         .date-input-row {
             display: flex;
             gap: 8px;
@@ -321,7 +310,6 @@
             outline: none;
         }
 
-        /* Mood Chips Style */
         .mood-chips-container {
             display: flex;
             gap: 8px;
@@ -340,18 +328,12 @@
             user-select: none;
         }
 
-        .mood-chip:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
         .mood-chip.active {
             background: rgba(168, 230, 207, 0.2);
             border-color: #a8e6cf;
             color: #a8e6cf;
-            box-shadow: 0 0 10px rgba(168, 230, 207, 0.3);
         }
 
-        /* List Items Styling */
         .entry-list {
             display: flex;
             flex-direction: column;
@@ -366,20 +348,13 @@
             border-radius: 12px;
             padding: 16px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-
-        .entry-details {
-            flex-grow: 1;
-            cursor: pointer;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .entry-title {
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 4px;
         }
 
         .entry-date {
@@ -387,45 +362,6 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        /* Options Button */
-        .options-btn {
-            background: none;
-            border: none;
-            color: #ffffff;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            right: 12px;
-            top: 45px;
-            background: #14141d;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            z-index: 50;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            overflow: hidden;
-        }
-
-        .dropdown-menu button {
-            background: none;
-            border: none;
-            color: #ffffff;
-            padding: 10px 16px;
-            width: 100%;
-            text-align: left;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .dropdown-menu button:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        /* Gallery Grid */
         .gallery-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -438,10 +374,8 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             overflow: hidden;
-            position: relative;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .gallery-img-container {
@@ -449,7 +383,6 @@
             aspect-ratio: 3/4;
             background: rgba(0,0,0,0.2);
             position: relative;
-            cursor: pointer;
         }
 
         .gallery-img {
@@ -465,7 +398,6 @@
             align-items: center;
         }
 
-        /* Floating Add Button */
         .floating-add-btn {
             position: absolute;
             bottom: 30px;
@@ -484,7 +416,6 @@
             justify-content: center;
         }
 
-        /* Toast Notifications */
         .toast {
             position: fixed;
             bottom: -60px;
@@ -501,108 +432,17 @@
             pointer-events: none;
         }
 
-        .revert-bg-btn {
-            position: absolute;
-            bottom: 12px;
-            right: 12px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 11px;
-            padding: 6px 10px;
-            cursor: pointer;
-            z-index: 20;
-            display: none;
-        }
-
-        /* Chat view */
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100% - 70px);
-            margin-top: 70px;
-        }
-
-        .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .msg {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-
-        .msg-user {
-            align-self: flex-end;
-            background: rgba(168, 221, 253, 0.15);
-            border: 1px solid rgba(168, 221, 253, 0.3);
-            border-bottom-right-radius: 4px;
-        }
-
-        .msg-bot {
-            align-self: flex-start;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom-left-radius: 4px;
-        }
-
         .image-generator-container {
             display: flex;
             flex-direction: column;
             gap: 15px;
             margin-top: 80px;
         }
-
-        /* Preview Modal */
-        .modal {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 150;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-img {
-            max-width: 100%;
-            max-height: 70%;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .modal-instructions {
-            margin-top: 15px;
-            color: rgba(255, 255, 255, 0.8);
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 28px;
-            cursor: pointer;
-        }
     </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -612,481 +452,3 @@
 
         <header id="globalHeader" style="display: none;">
             <div class="header-left">
-                <button class="menu-btn" onclick="toggleSidebar()">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                <button class="header-back-btn" onclick="goBack()" title="Go Back">←</button>
-            </div>
-            <div class="profile-btn" id="profileBadge">U</div>
-        </header>
-
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-item" onclick="navigateTo('screenMyJournal')">
-                <span class="sidebar-icon">📄</span> My Journal
-            </div>
-            <div class="sidebar-item" onclick="navigateTo('screenAddDream')">
-                <span class="sidebar-icon">☁️</span> Add Dream
-            </div>
-            <div class="sidebar-item" onclick="navigateTo('screenGallery')">
-                <span class="sidebar-icon">🖼️</span> Dream Gallery
-            </div>
-            <div class="sidebar-item" onclick="navigateTo('screenAssistant')">
-                <span class="sidebar-icon">🤖</span> Personal Assistant
-            </div>
-        </div>
-
-        <div class="screen active" id="screenLogin">
-            <div class="centered-content">
-                <h1 style="font-size: 32px; margin-bottom: 30px;">DreamScaper</h1>
-                <div class="input-group">
-                    <label>Enter your email:</label>
-                    <input type="email" id="loginEmail" class="input-field" placeholder="name@example.com">
-                </div>
-                <button class="glow-btn btn-blue" onclick="sendLoginCode()">Send Verification Code</button>
-            </div>
-        </div>
-
-        <div class="screen" id="screenCodeVerify">
-            <div class="centered-content">
-                <h1 style="font-size: 28px; margin-bottom: 20px;">Verify Account</h1>
-                <p style="margin-bottom: 20px; color: rgba(255,255,255,0.7);">Enter the 4-digit code sent to your email</p>
-                <div class="input-group">
-                    <input type="text" id="verifyCode" class="input-field" placeholder="1234" style="text-align: center; font-size: 22px; letter-spacing: 4px;">
-                </div>
-                <button class="glow-btn btn-green" onclick="verifyLoginCode()">Verify & Continue</button>
-            </div>
-        </div>
-
-        <div class="screen" id="screenUsername">
-            <div class="centered-content">
-                <h1 style="font-size: 28px; margin-bottom: 30px;">What is your name?</h1>
-                <div class="input-group">
-                    <input type="text" id="userNameInput" class="input-field" placeholder="Enter your username">
-                </div>
-                <button class="glow-btn btn-yellow" onclick="saveUsername()">Get Started</button>
-            </div>
-        </div>
-
-        <div class="screen" id="screenHome">
-            <button class="revert-bg-btn" id="revertBtn" onclick="revertToOriginalBackground()">Change Back to Original</button>
-            <div class="centered-content">
-                <h1 class="welcome-title" id="welcomeMsg">Welcome to Dreamscaper</h1>
-                <button class="glow-btn btn-green" onclick="navigateTo('screenAddDream')">+ Create a New Dream</button>
-                <button class="glow-btn btn-blue" onclick="navigateTo('screenJournalCreate')">+ Add Page to the Journal</button>
-                <button class="glow-btn btn-yellow" onclick="navigateTo('screenGallery')">Go to Dream Gallery</button>
-            </div>
-        </div>
-
-        <div class="screen" id="screenAddDream">
-            <div class="image-generator-container">
-                <h2 style="font-size: 24px; margin-bottom: 10px;">Paint a New Dream</h2>
-                
-                <div class="input-group" style="max-width: 100%;">
-                    <label>Dream Title:</label>
-                    <input type="text" id="dreamTitle" class="input-field" placeholder="Title of your dream">
-                </div>
-
-                <div class="input-group" style="max-width: 100%; margin-bottom: 4px;">
-                    <label>Keywords (e.g. glowing jellyfish, purple sky):</label>
-                    <input type="text" id="dreamKeywords" class="input-field" placeholder="Describe key visual elements">
-                </div>
-
-                <button class="mic-hold-btn" id="micBtn" 
-                        onmousedown="startVoiceRecording(event)" 
-                        onmouseup="stopVoiceRecording(event)" 
-                        ontouchstart="startVoiceRecording(event)" 
-                        ontouchend="stopVoiceRecording(event)">
-                    <span id="micIcon">🎙️</span> <span id="micStatusText">Hold to speak keywords</span>
-                </button>
-
-                <div class="input-group" style="max-width: 100%; margin-top: 10px;">
-                    <label>Dream Atmosphere / Mood:</label>
-                    <div class="mood-chips-container" id="moodSelector">
-                        <span class="mood-chip active" onclick="selectMood(this, 'Serene & Ethereal')">🌸 Serene</span>
-                        <span class="mood-chip" onclick="selectMood(this, 'Mystical & Cosmic')">✨ Mystical</span>
-                        <span class="mood-chip" onclick="selectMood(this, 'Vibrant & Surreal')">🌈 Surreal</span>
-                        <span class="mood-chip" onclick="selectMood(this, 'Dark & Mysterious')">🌙 Dark</span>
-                    </div>
-                </div>
-
-                <div class="input-group" style="max-width: 100%;">
-                    <label>Select Artistic Style:</label>
-                    <select id="artStyle" class="dropdown-select">
-                        <option value="anime style, vibrant colors, Studio Ghibli inspired, high quality visual">Anime / Fantasy Visual</option>
-                        <option value="textured oil painting, rich deep colors, starry surreal background, expressive brush strokes">Classic Oil Painting</option>
-                        <option value="soft chalk pastel painting, dreamlike, soft ambient glowing light">Pastel Soft Dream</option>
-                        <option value="cyberpunk neon lighting, glowing elements, ultra detailed digital art">Cyberpunk / Sci-Fi Glow</option>
-                        <option value="surreal watercolor art, fluid blending colors, ethereal atmosphere">Surreal Watercolor</option>
-                    </select>
-                </div>
-
-                <button class="glow-btn btn-green" id="btnPaintDream" onclick="generateDreamscape()">Paint & Save to Gallery</button>
-
-                <div id="generatorLoading" style="display:none; text-align: center; margin-top: 15px;">
-                    <p style="color: #ffeda6; font-style: italic;">Painting your subconscious... please wait...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="screen" id="screenGallery">
-            <div class="gallery-grid" id="galleryGrid"></div>
-        </div>
-
-        <div class="screen" id="screenJournalCreate">
-            <div class="image-generator-container">
-                <h2 style="font-size: 24px; margin-bottom: 10px;">Personal Journal Entry</h2>
-                
-                <div class="input-group" style="max-width: 100%;">
-                    <label>Page Title:</label>
-                    <input type="text" id="journalTitle" class="input-field" placeholder="Write a page title...">
-                </div>
-
-                <div class="input-group" style="max-width: 100%;">
-                    <label>Entry Date:</label>
-                    <div class="date-input-row">
-                        <select id="journalDateSelect" class="dropdown-select" style="flex: 1;"></select>
-                        
-                        <select id="journalDaySelect" class="dropdown-select" style="flex: 1.2;">
-                            <option value="Monday">Monday</option>
-                            <option value="Tuesday">Tuesday</option>
-                            <option value="Wednesday">Wednesday</option>
-                            <option value="Thursday">Thursday</option>
-                            <option value="Friday">Friday</option>
-                            <option value="Saturday">Saturday</option>
-                            <option value="Sunday">Sunday</option>
-                        </select>
-
-                        <input type="text" id="journalYearInput" class="input-field" placeholder="Year" style="flex: 1; text-align: center;">
-                    </div>
-                </div>
-
-                <div class="input-group" style="max-width: 100%;">
-                    <label>Journal entry text:</label>
-                    <textarea id="journalContent" class="input-field" style="height: 180px; resize: none;" placeholder="Start writing your thoughts..."></textarea>
-                </div>
-
-                <button class="glow-btn btn-blue" onclick="saveJournalPage()">Save to Journal</button>
-            </div>
-        </div>
-
-        <div class="screen" id="screenMyJournal">
-            <div class="entry-list" id="journalList"></div>
-            <button class="floating-add-btn" onclick="navigateTo('screenJournalCreate')">+</button>
-        </div>
-
-        <div class="screen" id="screenAssistant">
-            <div class="chat-container">
-                <div class="chat-messages" id="chatLogs">
-                    <div class="msg msg-bot">🌸 Hello! I am your cozy DreamScaper companion. You can tell me about your dreams, ask about dream meanings, or just share your day. How can I help you today?</div>
-                </div>
-                <div style="display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <input type="text" id="chatInput" class="input-field" placeholder="Ask about your dreams..." style="border-radius: 20px;">
-                    <button class="profile-btn" onclick="sendAssistantMsg()" style="background: #a8e6cf; border: none; color:#0d0d13; border-radius: 50%; width: 44px; height: 44px; cursor: pointer;">➔</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal" id="previewModal">
-            <button class="close-modal" onclick="closeModal()">×</button>
-            <img class="modal-img" id="modalImg" src="">
-            <p class="modal-instructions" id="modalInstructions"></p>
-        </div>
-
-    </div>
-
-    <div class="toast" id="toast">Notification text</div>
-
-    <script>
-        const GROQ_API_KEY = "";
-
-        let currentUser = { email: "", username: "" };
-        let journalData = JSON.parse(localStorage.getItem('dreamscaper_journal')) || [];
-        let galleryData = JSON.parse(localStorage.getItem('dreamscaper_gallery')) || [];
-        
-        let screenHistory = [];
-        let currentScreen = 'screenLogin';
-        let selectedDreamMood = "Serene & Ethereal";
-
-        // Speech Recognition Setup
-        let recognition = null;
-        let isRecording = false;
-
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onresult = (event) => {
-                let transcript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
-                }
-                const input = document.getElementById('dreamKeywords');
-                input.value = transcript;
-            };
-
-            recognition.onerror = (event) => {
-                showToast("Voice recognition error: " + event.error);
-                stopVoiceRecording();
-            };
-        }
-
-        function startVoiceRecording(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            if (!recognition) return showToast("Speech recognition is not supported on this browser.");
-            if (isRecording) return;
-
-            try {
-                recognition.start();
-                isRecording = true;
-                const btn = document.getElementById('micBtn');
-                btn.classList.add('recording');
-                document.getElementById('micIcon').textContent = '🔴';
-                document.getElementById('micStatusText').textContent = 'Listening... Speak now';
-            } catch(err) {
-                console.log(err);
-            }
-        }
-
-        function stopVoiceRecording(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            if (!recognition || !isRecording) return;
-
-            recognition.stop();
-            isRecording = false;
-            const btn = document.getElementById('micBtn');
-            btn.classList.remove('recording');
-            document.getElementById('micIcon').textContent = '🎙️';
-            document.getElementById('micStatusText').textContent = 'Hold to speak keywords';
-            showToast("Voice transcribed!");
-        }
-
-        // Populate Date Dropdown (1 to 31) & Default Year
-        document.addEventListener('DOMContentLoaded', () => {
-            const dateSelect = document.getElementById('journalDateSelect');
-            for (let i = 1; i <= 31; i++) {
-                const opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = i;
-                dateSelect.appendChild(opt);
-            }
-
-            const today = new Date();
-            dateSelect.value = today.getDate();
-            document.getElementById('journalYearInput').value = today.getFullYear();
-            
-            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            document.getElementById('journalDaySelect').value = days[today.getDay()];
-        });
-
-        // Navigation Engine
-        function navigateTo(screenId) {
-            if (currentScreen && currentScreen !== screenId) {
-                screenHistory.push(currentScreen);
-            }
-            showScreen(screenId);
-        }
-
-        function goBack() {
-            if (screenHistory.length > 0) {
-                const previousScreen = screenHistory.pop();
-                showScreen(previousScreen);
-            } else {
-                navigateTo('screenHome');
-            }
-        }
-
-        function showScreen(screenId) {
-            currentScreen = screenId;
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-
-            const noHeaderScreens = ['screenLogin', 'screenCodeVerify', 'screenUsername'];
-            if (noHeaderScreens.includes(screenId)) {
-                document.getElementById('globalHeader').style.display = 'none';
-            } else {
-                document.getElementById('globalHeader').style.display = 'flex';
-            }
-
-            document.getElementById('sidebar').classList.remove('open');
-
-            if (screenId === 'screenMyJournal') renderJournal();
-            if (screenId === 'screenGallery') renderGallery();
-        }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.bottom = '30px';
-            setTimeout(() => {
-                toast.style.bottom = '-60px';
-            }, 3000);
-        }
-
-        // Authentication Placeholders
-        function sendLoginCode() {
-            const email = document.getElementById('loginEmail').value;
-            if (!email) return showToast("Please enter a valid email address.");
-            currentUser.email = email;
-            navigateTo('screenCodeVerify');
-        }
-
-        function verifyLoginCode() {
-            const code = document.getElementById('verifyCode').value;
-            if (!code) return showToast("Please enter the verification code.");
-            navigateTo('screenUsername');
-        }
-
-        function saveUsername() {
-            const name = document.getElementById('userNameInput').value;
-            if (!name) return showToast("Please enter your name.");
-            currentUser.username = name;
-            document.getElementById('profileBadge').textContent = name.charAt(0).toUpperCase();
-            document.getElementById('welcomeMsg').textContent = `Welcome, ${name}`;
-            navigateTo('screenHome');
-        }
-
-        function selectMood(element, moodText) {
-            document.querySelectorAll('.mood-chip').forEach(chip => chip.classList.remove('active'));
-            element.classList.add('active');
-            selectedDreamMood = moodText;
-        }
-
-        // Dummy/Placeholder functions for generation & interactions
-        function generateDreamscape() {
-            const title = document.getElementById('dreamTitle').value || "Untitled Dream";
-            showToast(`Generating dream: ${title}...`);
-        }
-
-        function saveJournalPage() {
-            showToast("Journal page saved!");
-            navigateTo('screenMyJournal');
-        }
-
-        function renderJournal() {
-            // Journal rendering logic
-        }
-
-        function renderGallery() {
-            // Gallery rendering logic
-        }
-
-        function sendAssistantMsg() {
-            const input = document.getElementById('chatInput');
-            if (!input.value) return;
-            const logs = document.getElementById('chatLogs');
-            const userMsg = document.createElement('div');
-            userMsg.className = 'msg msg-user';
-            userMsg.textContent = input.value;
-            logs.appendChild(userMsg);
-            input.value = '';
-            logs.scrollTop = logs.scrollHeight;
-        }
-
-        function closeModal() {
-            document.getElementById('previewModal').style.display = 'none';
-        }
-    </script>
-</body>
-</html>
-<script>
-    // Overriding the generation function to handle video output
-    async function generateDreamscape() {
-        let creditData = getCreditData();
-
-        if (creditData.count >= DAILY_LIMIT) {
-            showToast(`Daily limit reached! You can paint ${DAILY_LIMIT} dreams per day.`);
-            return;
-        }
-
-        const title = document.getElementById('dreamTitle').value || "Untitled Dream";
-        const keywords = document.getElementById('dreamKeywords').value || "surreal dreamscape";
-        const style = document.getElementById('artStyle').value;
-
-        const loadingElem = document.getElementById('generatorLoading');
-        const generateBtn = document.getElementById('btnPaintDream');
-
-        loadingElem.style.display = 'block';
-        loadingElem.querySelector('p').innerText = "Animating your subconscious into video... please wait...";
-        generateBtn.disabled = true;
-
-        try {
-            // Constructing prompt
-            const prompt = encodeURIComponent(`${keywords}, ${selectedDreamMood}, ${style}`);
-            
-            // Example using a public media/video generation endpoint format
-            // Replace 'VIDEO_API_ENDPOINT' with your preferred provider (e.g. Replicate, Runway webhook)
-            const videoUrl = `https://image.pollinations.ai/prompt/${prompt}?width=512&height=512&nologo=true`;
-
-            // Increment user credit
-            creditData.count += 1;
-            localStorage.setItem('dreamscaper_credits', JSON.stringify(creditData));
-
-            // Create or update video element in gallery data
-            const dreamItem = {
-                id: Date.now(),
-                title: title,
-                mediaUrl: videoUrl,
-                type: 'video', // Marked as video
-                date: new Date().toLocaleDateString()
-            };
-
-            galleryData.unshift(dreamItem);
-            localStorage.setItem('dreamscaper_gallery', JSON.stringify(galleryData));
-
-            showToast(`Dream video generated: "${title}"!`);
-
-            // Automatically navigate to gallery to view the new video
-            setTimeout(() => {
-                navigateTo('screenGallery');
-            }, 1000);
-
-        } catch (error) {
-            showToast("Failed to generate video. Please try again.");
-            console.error(error);
-        } finally {
-            loadingElem.style.display = 'none';
-            generateBtn.disabled = false;
-        }
-    }
-
-    // Updated renderGallery to render <video> elements instead of static <img> tags
-    function renderGallery() {
-        const grid = document.getElementById('galleryGrid');
-        if (!grid) return;
-
-        grid.innerHTML = '';
-
-        if (galleryData.length === 0) {
-            grid.innerHTML = '<p style="grid-column: span 2; text-align: center; color: rgba(255,255,255,0.5);">No dreams generated yet.</p>';
-            return;
-        }
-
-        galleryData.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'gallery-card';
-
-            const mediaHTML = item.type === 'video' 
-                ? `<video src="${item.mediaUrl}" autoplay loop muted playsinline class="gallery-img"></video>`
-                : `<img src="${item.mediaUrl}" class="gallery-img" alt="${item.title}" />`;
-
-            card.innerHTML = `
-                <div class="gallery-img-container">
-                    ${mediaHTML}
-                </div>
-                <div class="gallery-info">
-                    <span style="font-weight: bold; font-size: 14px;">${item.title}</span>
-                    <span style="font-size: 11px; color: rgba(255,255,255,0.5);">${item.date}</span>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-</script>
