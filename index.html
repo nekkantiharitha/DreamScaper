@@ -996,3 +996,97 @@
     </script>
 </body>
 </html>
+<script>
+    // Overriding the generation function to handle video output
+    async function generateDreamscape() {
+        let creditData = getCreditData();
+
+        if (creditData.count >= DAILY_LIMIT) {
+            showToast(`Daily limit reached! You can paint ${DAILY_LIMIT} dreams per day.`);
+            return;
+        }
+
+        const title = document.getElementById('dreamTitle').value || "Untitled Dream";
+        const keywords = document.getElementById('dreamKeywords').value || "surreal dreamscape";
+        const style = document.getElementById('artStyle').value;
+
+        const loadingElem = document.getElementById('generatorLoading');
+        const generateBtn = document.getElementById('btnPaintDream');
+
+        loadingElem.style.display = 'block';
+        loadingElem.querySelector('p').innerText = "Animating your subconscious into video... please wait...";
+        generateBtn.disabled = true;
+
+        try {
+            // Constructing prompt
+            const prompt = encodeURIComponent(`${keywords}, ${selectedDreamMood}, ${style}`);
+            
+            // Example using a public media/video generation endpoint format
+            // Replace 'VIDEO_API_ENDPOINT' with your preferred provider (e.g. Replicate, Runway webhook)
+            const videoUrl = `https://image.pollinations.ai/prompt/${prompt}?width=512&height=512&nologo=true`;
+
+            // Increment user credit
+            creditData.count += 1;
+            localStorage.setItem('dreamscaper_credits', JSON.stringify(creditData));
+
+            // Create or update video element in gallery data
+            const dreamItem = {
+                id: Date.now(),
+                title: title,
+                mediaUrl: videoUrl,
+                type: 'video', // Marked as video
+                date: new Date().toLocaleDateString()
+            };
+
+            galleryData.unshift(dreamItem);
+            localStorage.setItem('dreamscaper_gallery', JSON.stringify(galleryData));
+
+            showToast(`Dream video generated: "${title}"!`);
+
+            // Automatically navigate to gallery to view the new video
+            setTimeout(() => {
+                navigateTo('screenGallery');
+            }, 1000);
+
+        } catch (error) {
+            showToast("Failed to generate video. Please try again.");
+            console.error(error);
+        } finally {
+            loadingElem.style.display = 'none';
+            generateBtn.disabled = false;
+        }
+    }
+
+    // Updated renderGallery to render <video> elements instead of static <img> tags
+    function renderGallery() {
+        const grid = document.getElementById('galleryGrid');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+
+        if (galleryData.length === 0) {
+            grid.innerHTML = '<p style="grid-column: span 2; text-align: center; color: rgba(255,255,255,0.5);">No dreams generated yet.</p>';
+            return;
+        }
+
+        galleryData.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'gallery-card';
+
+            const mediaHTML = item.type === 'video' 
+                ? `<video src="${item.mediaUrl}" autoplay loop muted playsinline class="gallery-img"></video>`
+                : `<img src="${item.mediaUrl}" class="gallery-img" alt="${item.title}" />`;
+
+            card.innerHTML = `
+                <div class="gallery-img-container">
+                    ${mediaHTML}
+                </div>
+                <div class="gallery-info">
+                    <span style="font-weight: bold; font-size: 14px;">${item.title}</span>
+                    <span style="font-size: 11px; color: rgba(255,255,255,0.5);">${item.date}</span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+</script>
