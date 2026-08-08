@@ -103,7 +103,6 @@
             transition: 0.3s;
         }
 
-        /* Back Arrow Icon next to hamburger menu */
         .header-back-btn {
             background: none;
             border: none;
@@ -271,7 +270,6 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* Push-to-Talk Voice Button Styling */
         .mic-hold-btn {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -298,7 +296,6 @@
             transform: scale(0.98);
         }
 
-        /* Custom Date Row for Journaling */
         .date-input-row {
             display: flex;
             gap: 8px;
@@ -316,7 +313,6 @@
             outline: none;
         }
 
-        /* Mood Chips Style */
         .mood-chips-container {
             display: flex;
             gap: 8px;
@@ -346,7 +342,6 @@
             box-shadow: 0 0 10px rgba(168, 230, 207, 0.3);
         }
 
-        /* List Items Styling */
         .entry-list {
             display: flex;
             flex-direction: column;
@@ -382,7 +377,6 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        /* Options Button */
         .options-btn {
             background: none;
             border: none;
@@ -447,7 +441,7 @@
             cursor: pointer;
         }
 
-        .gallery-img {
+        .gallery-img, .gallery-video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -460,7 +454,6 @@
             align-items: center;
         }
 
-        /* Floating Add Button */
         .floating-add-btn {
             position: absolute;
             bottom: 30px;
@@ -479,7 +472,6 @@
             justify-content: center;
         }
 
-        /* Toast Notifications */
         .toast {
             position: fixed;
             bottom: -60px;
@@ -511,7 +503,6 @@
             display: none;
         }
 
-        /* Chat view */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -557,7 +548,6 @@
             margin-top: 80px;
         }
 
-        /* Preview Modal */
         .modal {
             display: none;
             position: absolute;
@@ -690,7 +680,7 @@
 
                 <button class="mic-hold-btn" id="micBtn" 
                         onmousedown="startVoiceRecording()" 
-                        onmouseup="stopVoiceRecording()"
+                        onmouseup="stopVoiceRecording()" 
                         ontouchstart="startVoiceRecording(event)" 
                         ontouchend="stopVoiceRecording(event)">
                     <span id="micIcon">🎙️</span> <span id="micStatusText">Hold to speak keywords</span>
@@ -717,27 +707,10 @@
                     </select>
                 </div>
 
-                <div class="input-group" style="max-width: 100%;">
-                    <label>Generation Type:</label>
-                    <select id="generationType" class="dropdown-select" onchange="toggleTimeLimitOption()">
-                        <option value="image">Image</option>
-                        <option value="video">Video</option>
-                    </select>
-                </div>
-
-                <div class="input-group" id="timeLimitContainer" style="max-width: 100%; display: none;">
-                    <label>Time Limit:</label>
-                    <select id="videoTimeLimit" class="dropdown-select">
-                        <option value="20s">20 second</option>
-                        <option value="30s">30seconds</option>
-                        <option value="1m">1minuet</option>
-                    </select>
-                </div>
-
                 <button class="glow-btn btn-green" id="btnPaintDream" onclick="generateDreamscape()">Paint & Save to Gallery</button>
 
                 <div id="generatorLoading" style="display:none; text-align: center; margin-top: 15px;">
-                    <p style="color: #ffeda6; font-style: italic;">Painting your subconscious... please wait...</p>
+                    <p style="color: #ffeda6; font-style: italic;">Rendering AI Dreamscape Video... please wait...</p>
                 </div>
             </div>
         </div>
@@ -805,7 +778,7 @@
 
         <div class="modal" id="previewModal">
             <button class="close-modal" onclick="closeModal()">×</button>
-            <div id="modalMediaContainer" style="width: 100%; display: flex; justify-content: center; align-items: center;"></div>
+            <div id="modalMediaContainer"></div>
             <p class="modal-instructions" id="modalInstructions"></p>
         </div>
 
@@ -814,6 +787,7 @@
     <div class="toast" id="toast">Notification text</div>
 
     <script>
+        const REPLICATE_API_KEY = "r8_MtGhdA0sJFK5BukEPNBLegG9WBD5t6K3Jwwrj";
         const GROQ_API_KEY = "";
 
         let currentUser = { email: "", username: "" };
@@ -879,7 +853,6 @@
             showToast("Voice transcribed!");
         }
 
-        // Populate Date Dropdown (1 to 31) & Default Year
         document.addEventListener('DOMContentLoaded', () => {
             const dateSelect = document.getElementById('journalDateSelect');
             for (let i = 1; i <= 31; i++) {
@@ -897,7 +870,6 @@
             document.getElementById('journalDaySelect').value = days[today.getDay()];
         });
 
-        // Navigation Engine
         function navigateTo(screenId) {
             if (currentScreen && currentScreen !== screenId) {
                 screenHistory.push(currentScreen);
@@ -943,7 +915,6 @@
             setTimeout(() => { toast.style.bottom = '-60px'; }, 3000);
         }
 
-        /* 1. LOGIN UTILS */
         function sendLoginCode() {
             const email = document.getElementById('loginEmail').value;
             if(!email) return showToast("Please write down an email address first!");
@@ -987,7 +958,6 @@
             showToast("Logged in successfully!");
         }
 
-        /* 2. JOURNALING MECHANICS WITH CUSTOM DATE */
         function renderJournal() {
             const listContainer = document.getElementById('journalList');
             listContainer.innerHTML = '';
@@ -1077,30 +1047,16 @@
             }
         }
 
-        /* 3. ADD DREAM MECHANICS */
         function selectMood(element, moodText) {
             document.querySelectorAll('.mood-chip').forEach(chip => chip.classList.remove('active'));
             element.classList.add('active');
             selectedDreamMood = moodText;
         }
 
-        // Toggle Time Limit Option based on Generation Type
-        function toggleTimeLimitOption() {
-            const genType = document.getElementById('generationType').value;
-            const timeLimitContainer = document.getElementById('timeLimitContainer');
-            if (genType === 'video') {
-                timeLimitContainer.style.display = 'flex';
-            } else {
-                timeLimitContainer.style.display = 'none';
-            }
-        }
-
         async function generateDreamscape() {
             const title = document.getElementById('dreamTitle').value;
             const keywords = document.getElementById('dreamKeywords').value;
             const style = document.getElementById('artStyle').value;
-            const genType = document.getElementById('generationType').value;
-            const timeLimit = document.getElementById('videoTimeLimit').value;
 
             if(!title || !keywords) return showToast("Provide a title and keywords first!");
 
@@ -1111,30 +1067,49 @@
             btn.disabled = true;
 
             try {
-                let combinedPrompt = `${keywords}, atmosphere mood: ${selectedDreamMood}, style: ${style}, high quality, 8k resolution`;
-                if(genType === 'video') {
-                    combinedPrompt += `, video duration ${timeLimit}, smooth motion animation`;
-                }
-                const safePrompt = encodeURIComponent(combinedPrompt);
-                const randomSeed = Math.floor(Math.random() * 999999);
+                const promptText = `${keywords}, atmosphere mood: ${selectedDreamMood}, style: ${style}, highly detailed dream scene`;
+
+                // Call Replicate API to create video generation task
+                const response = await fetch("https://api.replicate.com/v1/predictions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${REPLICATE_API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        version: "1e1620a28f80f68ff134b2f155990264022c4f8d55c7062ec87a2d48bf6517a6",
+                        input: {
+                            prompt: promptText
+                        }
+                    })
+                });
+
+                let prediction = await response.json();
                 
-                let mediaUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=600&height=800&nologo=true&seed=${randomSeed}`;
-                if (genType === 'video') {
-                    mediaUrl += `&model=video`;
+                if (prediction.error) {
+                    throw new Error(prediction.error);
                 }
 
-                const preloader = new Image();
-                preloader.src = mediaUrl;
-                preloader.onload = () => {
+                // Poll for completion
+                while (prediction.status !== "succeeded" && prediction.status !== "failed") {
+                    await new Promise(r => setTimeout(r, 3000));
+                    const checkRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+                        headers: { "Authorization": `Bearer ${REPLICATE_API_KEY}` }
+                    });
+                    prediction = await checkRes.json();
+                }
+
+                if (prediction.status === "succeeded") {
+                    const videoUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+
                     const newDream = {
                         id: Date.now(),
                         email: currentUser.email,
                         title: title,
                         keywords: keywords,
                         mood: selectedDreamMood,
-                        img: mediaUrl,
-                        type: genType,
-                        timeLimit: genType === 'video' ? timeLimit : null,
+                        img: videoUrl,
+                        isVideo: true,
                         date: new Date().toLocaleDateString()
                     };
 
@@ -1147,16 +1122,19 @@
                     btn.disabled = false;
 
                     navigateTo('screenGallery');
-                    showToast(genType === 'video' ? "✨ New Dream Video saved to gallery!" : "✨ New Dreamscape saved to gallery!");
-                };
+                    showToast("✨ New Video Dreamscape saved to gallery!");
+                } else {
+                    throw new Error("Video creation failed on Replicate servers.");
+                }
+
             } catch(e) {
+                console.error(e);
                 loadingDiv.style.display = 'none';
                 btn.disabled = false;
-                showToast("Oops, problem generating media. Please try again.");
+                showToast("Video generation failed. Re-check API key or account limits.");
             }
         }
 
-        /* 4. GALLERY RENDER WITH DOWNLOAD OPTION */
         function renderGallery() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = '';
@@ -1170,24 +1148,24 @@
             userDreams.forEach(dream => {
                 const card = document.createElement('div');
                 card.className = 'gallery-card';
-
-                const isVideo = dream.type === 'video';
-                const mediaMarkup = isVideo ? 
-                    `<video class="gallery-img" src="${dream.img}" autoplay loop muted playsinline></video>` :
-                    `<img class="gallery-img" src="${dream.img}">`;
+                
+                const isVideo = dream.isVideo || dream.img.endsWith('.mp4');
+                const mediaTag = isVideo 
+                    ? `<video class="gallery-video" src="${dream.img}" autoplay loop muted playsinline></video>` 
+                    : `<img class="gallery-img" src="${dream.img}">`;
 
                 card.innerHTML = `
-                    <div class="gallery-img-container" onclick="openMediaModal('${dream.img}', '${dream.type || 'image'}', 'Tap and hold to save \\'${dream.title.replace(/'/g, "\\'")}\\' to your device!')">
-                        ${mediaMarkup}
+                    <div class="gallery-img-container" onclick="openMediaModal('${dream.img}', ${isVideo}, 'Painting of \\'${dream.title}\\'')">
+                        ${mediaTag}
                     </div>
                     <div class="gallery-info">
                         <div>
                             <div style="font-size:15px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;">${dream.title}</div>
-                            <div style="font-size:10px; color:rgba(255,255,255,0.55);">${dream.date} ${isVideo ? '• Video (' + (dream.timeLimit || '20s') + ')' : ''}</div>
+                            <div style="font-size:10px; color:rgba(255,255,255,0.55);">${dream.date}</div>
                         </div>
                         <button class="options-btn" style="padding:4px;" onclick="toggleDropdown(event, 'g-${dream.id}')">⋮</button>
                         <div class="dropdown-menu" id="dropdown-g-${dream.id}">
-                            <button onclick="downloadDreamImage('${dream.img}', '${dream.title.replace(/'/g, "\\'")}')">📥 Download</button>
+                            <button onclick="window.open('${dream.img}', '_blank')">📥 Download</button>
                             ${!isVideo ? `<button onclick="setAppBackground('${dream.img}')">Set as App BG</button>` : ''}
                             <button onclick="deleteDream(${dream.id})">Delete</button>
                         </div>
@@ -1197,75 +1175,27 @@
             });
         }
 
-        /* RELIABLE CROSS-PLATFORM DOWNLOAD */
-        function downloadDreamImage(imgUrl, dreamTitle) {
-            showToast("Preparing media download...");
-
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = imgUrl;
-
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-
-                canvas.toBlob(function(blob) {
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
-                    link.download = `${dreamTitle.replace(/\s+/g, '_')}_dream.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(blobUrl);
-                    showToast("Download started!");
-                }, 'image/png');
-            };
-
-            img.onerror = function() {
-                window.open(imgUrl, '_blank');
-            };
+        function deleteDream(id) {
+            if(confirm("Delete this dream painting from your gallery?")) {
+                galleryData = galleryData.filter(d => d.id !== id);
+                localStorage.setItem('dreamscaper_gallery', JSON.stringify(galleryData));
+                renderGallery();
+                showToast("Dream deleted.");
+            }
         }
 
         function setAppBackground(imgUrl) {
             document.getElementById('bgLayer').style.backgroundImage = `url('${imgUrl}')`;
             localStorage.setItem(`dreamscaper_bg_${currentUser.email}`, imgUrl);
             document.getElementById('revertBtn').style.display = 'block';
-            showToast("App background updated!");
+            showToast("Dream set as your background!");
         }
 
         function revertToOriginalBackground() {
             document.getElementById('bgLayer').style.backgroundImage = "url('background.jpg')";
             localStorage.removeItem(`dreamscaper_bg_${currentUser.email}`);
             document.getElementById('revertBtn').style.display = 'none';
-            showToast("Background reset to default!");
-        }
-
-        function deleteDream(id) {
-            if(confirm("Delete this dream from gallery?")) {
-                galleryData = galleryData.filter(d => d.id !== id);
-                localStorage.setItem('dreamscaper_gallery', JSON.stringify(galleryData));
-                renderGallery();
-                showToast("Dream deleted!");
-            }
-        }
-
-        function openMediaModal(url, type, text) {
-            const container = document.getElementById('modalMediaContainer');
-            if (type === 'video') {
-                container.innerHTML = `<video class="modal-video" src="${url}" controls autoplay loop playsinline></video>`;
-            } else {
-                container.innerHTML = `<img class="modal-img" src="${url}">`;
-            }
-            document.getElementById('modalInstructions').textContent = text;
-            document.getElementById('previewModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('previewModal').style.display = 'none';
+            showToast("Reverted to default background!");
         }
 
         function toggleDropdown(event, id) {
@@ -1274,39 +1204,44 @@
                 if(menu.id !== `dropdown-${id}`) menu.style.display = 'none';
             });
             const menu = document.getElementById(`dropdown-${id}`);
-            if(menu) {
-                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            }
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
         }
 
-        window.onclick = function() {
+        document.addEventListener('click', () => {
             document.querySelectorAll('.dropdown-menu').forEach(menu => menu.style.display = 'none');
-        };
+        });
 
-        /* 5. AI ASSISTANT FUNCTIONALITY */
+        function openMediaModal(src, isVideo, message) {
+            const modal = document.getElementById('previewModal');
+            const container = document.getElementById('modalMediaContainer');
+            
+            if (isVideo) {
+                container.innerHTML = `<video class="modal-video" src="${src}" controls autoplay loop></video>`;
+            } else {
+                container.innerHTML = `<img class="modal-img" src="${src}">`;
+            }
+
+            document.getElementById('modalInstructions').textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
         async function sendAssistantMsg() {
             const input = document.getElementById('chatInput');
-            const messageText = input.value.trim();
-            if (!messageText) return;
-
             const logs = document.getElementById('chatLogs');
+            const messageText = input.value.trim();
+
+            if(!messageText) return;
 
             const userBubble = document.createElement('div');
             userBubble.className = 'msg msg-user';
             userBubble.textContent = messageText;
             logs.appendChild(userBubble);
-
             input.value = '';
             logs.scrollTop = logs.scrollHeight;
-
-            if (!GROQ_API_KEY) {
-                const botBubble = document.createElement('div');
-                botBubble.className = 'msg msg-bot';
-                botBubble.textContent = "🌸 Please configure your Groq API Key in the script source to talk with me!";
-                logs.appendChild(botBubble);
-                logs.scrollTop = logs.scrollHeight;
-                return;
-            }
 
             const botBubble = document.createElement('div');
             botBubble.className = 'msg msg-bot';
