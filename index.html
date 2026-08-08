@@ -452,3 +452,368 @@
 
         <header id="globalHeader" style="display: none;">
             <div class="header-left">
+                <button class="menu-btn" onclick="toggleSidebar()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <button class="header-back-btn" onclick="goBack()" title="Go Back">←</button>
+            </div>
+            <div class="profile-btn" id="profileBadge" onclick="signOutUser()">U</div>
+        </header>
+
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-item" onclick="navigateTo('screenMyJournal')">
+                <span class="sidebar-icon">📄</span> My Journal
+            </div>
+            <div class="sidebar-item" onclick="navigateTo('screenAddDream')">
+                <span class="sidebar-icon">☁️</span> Add Dream
+            </div>
+            <div class="sidebar-item" onclick="navigateTo('screenGallery')">
+                <span class="sidebar-icon">🖼️</span> Dream Gallery
+            </div>
+            <div class="sidebar-item" onclick="signOutUser()">
+                <span class="sidebar-icon">🚪</span> Sign Out
+            </div>
+        </div>
+
+        <div class="screen active" id="screenLogin">
+            <div class="centered-content">
+                <h1 style="font-size: 32px; margin-bottom: 30px;">DreamScaper</h1>
+                <div class="input-group">
+                    <label>Email Address:</label>
+                    <input type="email" id="loginEmail" class="input-field" placeholder="name@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Password:</label>
+                    <input type="password" id="loginPassword" class="input-field" placeholder="••••••••">
+                </div>
+                <button class="glow-btn btn-blue" onclick="handleAuth('login')">Sign In</button>
+                <button class="glow-btn btn-green" onclick="handleAuth('signup')">Create New Account</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screenUsername">
+            <div class="centered-content">
+                <h1 style="font-size: 28px; margin-bottom: 30px;">What is your name?</h1>
+                <div class="input-group">
+                    <input type="text" id="userNameInput" class="input-field" placeholder="Enter your username">
+                </div>
+                <button class="glow-btn btn-yellow" onclick="saveUsernameProfile()">Save & Get Started</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screenHome">
+            <div class="centered-content">
+                <h1 class="welcome-title" id="welcomeMsg">Welcome to DreamScaper</h1>
+                <button class="glow-btn btn-green" onclick="navigateTo('screenAddDream')">+ Create a New Dream</button>
+                <button class="glow-btn btn-blue" onclick="navigateTo('screenJournalCreate')">+ Add Page to Journal</button>
+                <button class="glow-btn btn-yellow" onclick="navigateTo('screenGallery')">Go to Dream Gallery</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screenAddDream">
+            <div class="image-generator-container">
+                <h2 style="font-size: 24px; margin-bottom: 10px;">Paint a New Dream</h2>
+                
+                <div class="input-group" style="max-width: 100%;">
+                    <label>Dream Title:</label>
+                    <input type="text" id="dreamTitle" class="input-field" placeholder="Title of your dream">
+                </div>
+
+                <div class="input-group" style="max-width: 100%;">
+                    <label>Keywords:</label>
+                    <input type="text" id="dreamKeywords" class="input-field" placeholder="Describe key visual elements">
+                </div>
+
+                <div class="input-group" style="max-width: 100%;">
+                    <label>Atmosphere / Mood:</label>
+                    <div class="mood-chips-container" id="moodSelector">
+                        <span class="mood-chip active" onclick="selectMood(this, 'Serene & Ethereal')">🌸 Serene</span>
+                        <span class="mood-chip" onclick="selectMood(this, 'Mystical & Cosmic')">✨ Mystical</span>
+                        <span class="mood-chip" onclick="selectMood(this, 'Vibrant & Surreal')">🌈 Surreal</span>
+                    </div>
+                </div>
+
+                <button class="glow-btn btn-green" id="btnPaintDream" onclick="generateDreamscape()">Paint & Save Cloud</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screenGallery">
+            <div class="gallery-grid" id="galleryGrid"></div>
+        </div>
+
+        <div class="screen" id="screenJournalCreate">
+            <div class="image-generator-container">
+                <h2 style="font-size: 24px;">Personal Journal Entry</h2>
+                
+                <div class="input-group" style="max-width: 100%;">
+                    <label>Page Title:</label>
+                    <input type="text" id="journalTitle" class="input-field" placeholder="Write a page title...">
+                </div>
+
+                <div class="input-group" style="max-width: 100%;">
+                    <label>Journal entry text:</label>
+                    <textarea id="journalContent" class="input-field" style="height: 180px; resize: none;" placeholder="Start writing your thoughts..."></textarea>
+                </div>
+
+                <button class="glow-btn btn-blue" onclick="saveJournalPage()">Save Entry</button>
+            </div>
+        </div>
+
+        <div class="screen" id="screenMyJournal">
+            <div class="entry-list" id="journalList"></div>
+            <button class="floating-add-btn" onclick="navigateTo('screenJournalCreate')">+</button>
+        </div>
+
+    </div>
+
+    <div class="toast" id="toast">Notification text</div>
+
+    <script>
+        // --- 1. FIREBASE CONFIGURATION ---
+        // REPLACE THE VALUES BELOW WITH YOUR FREE FIREBASE PROJECT KEYS FROM https://console.firebase.google.com/
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // App States
+        let currentUser = null;
+        let userProfileData = { username: "" };
+        let journalData = [];
+        let galleryData = [];
+        let screenHistory = [];
+        let currentScreen = 'screenLogin';
+        let selectedDreamMood = "Serene & Ethereal";
+
+        // --- 2. AUTHENTICATION & CROSS-DEVICE SYNC ---
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                // Fetch User Profile Data from Cloud Firestore
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                if (userDoc.exists) {
+                    userProfileData = userDoc.data();
+                    document.getElementById('profileBadge').textContent = (userProfileData.username || "U").charAt(0).toUpperCase();
+                    document.getElementById('welcomeMsg').textContent = `Welcome, ${userProfileData.username || 'Dreamer'}`;
+                    
+                    // Fetch Cloud Data
+                    await loadCloudData();
+                    navigateTo('screenHome');
+                } else {
+                    navigateTo('screenUsername');
+                }
+            } else {
+                currentUser = null;
+                navigateTo('screenLogin');
+            }
+        });
+
+        async function handleAuth(type) {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) return showToast("Please fill in both Email and Password.");
+
+            try {
+                if (type === 'signup') {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                    showToast("Account created successfully!");
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    showToast("Logged in!");
+                }
+            } catch (err) {
+                showToast(err.message);
+            }
+        }
+
+        async function saveUsernameProfile() {
+            const name = document.getElementById('userNameInput').value;
+            if (!name) return showToast("Please enter a username.");
+
+            if (currentUser) {
+                await db.collection("users").doc(currentUser.uid).set({
+                    username: name,
+                    email: currentUser.email
+                });
+                userProfileData.username = name;
+                document.getElementById('profileBadge').textContent = name.charAt(0).toUpperCase();
+                document.getElementById('welcomeMsg').textContent = `Welcome, ${name}`;
+                navigateTo('screenHome');
+            }
+        }
+
+        function signOutUser() {
+            auth.signOut();
+            showToast("Signed out.");
+        }
+
+        // --- 3. CLOUD DATA LOAD & SAVE (Firestore Sync) ---
+        async function loadCloudData() {
+            if (!currentUser) return;
+
+            // Load Journal Entries from Cloud
+            const journalSnapshot = await db.collection("users").doc(currentUser.uid).collection("journals").orderBy("createdAt", "desc").get();
+            journalData = journalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Load Dream Gallery from Cloud
+            const gallerySnapshot = await db.collection("users").doc(currentUser.uid).collection("gallery").orderBy("createdAt", "desc").get();
+            galleryData = gallerySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+
+        async function saveJournalPage() {
+            const title = document.getElementById('journalTitle').value;
+            const content = document.getElementById('journalContent').value;
+
+            if (!title || !content) return showToast("Please fill in all fields!");
+
+            const newEntry = {
+                title: title,
+                content: content,
+                date: new Date().toLocaleDateString(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await db.collection("users").doc(currentUser.uid).collection("journals").add(newEntry);
+            showToast("Entry saved to Cloud!");
+            document.getElementById('journalTitle').value = '';
+            document.getElementById('journalContent').value = '';
+            
+            await loadCloudData();
+            navigateTo('screenMyJournal');
+        }
+
+        async function generateDreamscape() {
+            const title = document.getElementById('dreamTitle').value || "Untitled Dream";
+            const keywords = document.getElementById('dreamKeywords').value || "Ethereal dreamscape";
+            
+            const prompt = encodeURIComponent(`${keywords}, ${selectedDreamMood}`);
+            const imageUrl = `https://image.pollinations.ai/prompt/${prompt}?width=512&height=512&nologo=true`;
+
+            const newDream = {
+                title: title,
+                mediaUrl: imageUrl,
+                date: new Date().toLocaleDateString(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await db.collection("users").doc(currentUser.uid).collection("gallery").add(newDream);
+            showToast(`Dream "${title}" saved to Cloud!`);
+
+            await loadCloudData();
+            navigateTo('screenGallery');
+        }
+
+        // --- 4. RENDER UI ---
+        function renderJournal() {
+            const list = document.getElementById('journalList');
+            list.innerHTML = '';
+
+            if (journalData.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color: rgba(255,255,255,0.5);">No journal entries found.</p>';
+                return;
+            }
+
+            journalData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'entry-card';
+                card.innerHTML = `
+                    <div class="entry-title">${item.title}</div>
+                    <div class="entry-date">${item.date}</div>
+                    <div style="font-size: 14px; margin-top: 6px; opacity: 0.8;">${item.content}</div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = '';
+
+            if (galleryData.length === 0) {
+                grid.innerHTML = '<p style="grid-column: span 2; text-align: center; color: rgba(255,255,255,0.5);">No dreams generated yet.</p>';
+                return;
+            }
+
+            galleryData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'gallery-card';
+                card.innerHTML = `
+                    <div class="gallery-img-container">
+                        <img src="${item.mediaUrl}" class="gallery-img" />
+                    </div>
+                    <div class="gallery-info">
+                        <span style="font-weight: bold; font-size: 14px;">${item.title}</span>
+                        <span style="font-size: 11px; color: rgba(255,255,255,0.5);">${item.date}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- 5. NAVIGATION SYSTEM ---
+        function navigateTo(screenId) {
+            if (currentScreen && currentScreen !== screenId) {
+                screenHistory.push(currentScreen);
+            }
+            showScreen(screenId);
+        }
+
+        function goBack() {
+            if (screenHistory.length > 0) {
+                const previousScreen = screenHistory.pop();
+                showScreen(previousScreen);
+            } else {
+                navigateTo('screenHome');
+            }
+        }
+
+        function showScreen(screenId) {
+            currentScreen = screenId;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            const noHeaderScreens = ['screenLogin', 'screenUsername'];
+            if (noHeaderScreens.includes(screenId)) {
+                document.getElementById('globalHeader').style.display = 'none';
+            } else {
+                document.getElementById('globalHeader').style.display = 'flex';
+            }
+
+            document.getElementById('sidebar').classList.remove('open');
+
+            if (screenId === 'screenMyJournal') renderJournal();
+            if (screenId === 'screenGallery') renderGallery();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.bottom = '30px';
+            setTimeout(() => {
+                toast.style.bottom = '-60px';
+            }, 3000);
+        }
+
+        function selectMood(element, moodText) {
+            document.querySelectorAll('.mood-chip').forEach(chip => chip.classList.remove('active'));
+            element.classList.add('active');
+            selectedDreamMood = moodText;
+        }
+    </script>
+</body>
+</html>
