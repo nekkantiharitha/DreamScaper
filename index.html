@@ -707,10 +707,10 @@
                     </select>
                 </div>
 
-                <button class="glow-btn btn-green" id="btnPaintDream" onclick="generateDreamscape()">Paint & Save to Gallery</button>
+                <button class="glow-btn btn-green" id="btnPaintDream" onclick="generateDreamscape()">Paint & Save Dreamscape</button>
 
                 <div id="generatorLoading" style="display:none; text-align: center; margin-top: 15px;">
-                    <p style="color: #ffeda6; font-style: italic;">Rendering AI Dreamscape Video... please wait...</p>
+                    <p style="color: #ffeda6; font-style: italic;">Rendering your AI Dreamscape... please wait...</p>
                 </div>
             </div>
         </div>
@@ -787,7 +787,7 @@
     <div class="toast" id="toast">Notification text</div>
 
     <script>
-        const REPLICATE_API_KEY = "r8_MtGhdA0sJFK5BukEPNBLegG9WBD5t6K3Jwwrj";
+        const REPLICATE_API_KEY = ""; // Keep API keys on a server, never in browser code.
         const GROQ_API_KEY = "";
 
         let currentUser = { email: "", username: "" };
@@ -919,13 +919,18 @@
             const email = document.getElementById('loginEmail').value;
             if(!email) return showToast("Please write down an email address first!");
             currentUser.email = email;
+            // Demo-only verification. A production app must send and verify this code on a server.
+            currentUser.verificationCode = String(Math.floor(1000 + Math.random() * 9000));
             navigateTo('screenCodeVerify');
-            showToast("Verification code sent to: " + email);
+            showToast("Demo code: " + currentUser.verificationCode);
         }
 
         function verifyLoginCode() {
-            const code = document.getElementById('verifyCode').value;
-            if(code.trim() === "") return showToast("Please input your verification code!");
+            const code = document.getElementById('verifyCode').value.trim();
+            if(!code) return showToast("Please input your verification code!");
+            if(code !== currentUser.verificationCode) {
+                return showToast("Incorrect verification code.");
+            }
 
             const cachedName = localStorage.getItem(`dreamscaper_username_${currentUser.email}`);
             if(cachedName) {
@@ -995,8 +1000,8 @@
             const dateVal = document.getElementById('journalDateSelect').value;
             const yearVal = document.getElementById('journalYearInput').value.trim();
 
-            if(!title || !content) return showToast("Title and contents must be filled!");
-            if(!yearVal) return showToast("Please enter a valid year!");
+            if(!title.trim() || !content.trim()) return showToast("Title and contents must be filled!");
+            if(!/^\d{4}$/.test(yearVal)) return showToast("Please enter a valid 4-digit year!");
 
             const formattedDate = `${dayVal}, ${dateVal} (${yearVal})`;
 
@@ -1071,8 +1076,9 @@
                 const safePrompt = encodeURIComponent(combinedPrompt);
                 const seed = Math.floor(Math.random() * 999999);
 
-                // Pure browser video endpoint generator URL (bypasses CORS restrictions)
-                const videoUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=600&height=800&nologo=true&seed=${seed}&model=video`;
+                // Pollinations' browser endpoint is an image endpoint, not a guaranteed video API.
+                // Use it for a dream image unless you connect a real video-generation backend.
+                const imageUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=600&height=800&nologo=true&seed=${seed}`;
 
                 const newDream = {
                     id: Date.now(),
@@ -1080,8 +1086,8 @@
                     title: title,
                     keywords: keywords,
                     mood: selectedDreamMood,
-                    img: videoUrl,
-                    isVideo: true,
+                    img: imageUrl,
+                    isVideo: false,
                     date: new Date().toLocaleDateString()
                 };
 
@@ -1094,13 +1100,13 @@
                 btn.disabled = false;
 
                 navigateTo('screenGallery');
-                showToast("✨ New Video Dreamscape saved to gallery!");
+                showToast("✨ New Dreamscape saved to gallery!");
 
             } catch(e) {
                 console.error(e);
                 loadingDiv.style.display = 'none';
                 btn.disabled = false;
-                showToast("Video generation failed. Please try again.");
+                showToast("Dreamscape generation failed. Please try again.");
             }
         }
 
@@ -1134,7 +1140,7 @@
                         </div>
                         <button class="options-btn" style="padding:4px;" onclick="toggleDropdown(event, 'g-${dream.id}')">⋮</button>
                         <div class="dropdown-menu" id="dropdown-g-${dream.id}">
-                            <button onclick="window.open('${dream.img}', '_blank')">📥 Download</button>
+                            <button onclick="window.open('${dream.img}', '_blank', 'noopener,noreferrer')">📥 Download</button>
                             ${!isVideo ? `<button onclick="setAppBackground('${dream.img}')">Set as App BG</button>` : ''}
                             <button onclick="deleteDream(${dream.id})">Delete</button>
                         </div>
@@ -1197,8 +1203,15 @@
         }
 
         function closeModal() {
-            document.getElementById('previewModal').style.display = 'none';
+            const modal = document.getElementById('previewModal');
+            const container = document.getElementById('modalMediaContainer');
+            modal.style.display = 'none';
+            container.innerHTML = '';
         }
+
+        document.getElementById('chatInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') sendAssistantMsg();
+        });
 
         async function sendAssistantMsg() {
             const input = document.getElementById('chatInput');
@@ -1221,6 +1234,11 @@
             logs.scrollTop = logs.scrollHeight;
 
             try {
+                if (!GROQ_API_KEY) {
+                    botBubble.textContent = "🌸 The AI assistant isn't configured yet. Add a server-side AI endpoint/API key to enable it.";
+                    return;
+                }
+
                 const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: {
@@ -1238,7 +1256,12 @@
                 });
 
                 const data = await response.json();
-                const aiReply = data.choices[0].message.content;
+                if (!response.ok) {
+                    throw new Error(data?.error?.message || `Request failed (${response.status})`);
+                }
+
+                const aiReply = data?.choices?.[0]?.message?.content;
+                if (!aiReply) throw new Error("The AI response was empty.");
                 botBubble.textContent = aiReply;
             } catch (err) {
                 botBubble.textContent = "🌸 I had a small dream-lapse and couldn't process that. Check your network or API key!";
