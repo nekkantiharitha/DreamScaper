@@ -636,9 +636,9 @@
         <div class="screen" id="screenCodeVerify">
             <div class="centered-content">
                 <h1 style="font-size: 28px; margin-bottom: 20px;">Verify Account</h1>
-                <p style="margin-bottom: 20px; color: rgba(255,255,255,0.7);">Enter the 4-digit code sent to your email</p>
+                <p id="verificationMessage" style="margin-bottom: 20px; color: rgba(255,255,255,0.7);">Enter the code sent to your email</p>
                 <div class="input-group">
-                    <input type="text" id="verifyCode" class="input-field" placeholder="1234" style="text-align: center; font-size: 22px; letter-spacing: 4px;">
+                    <input type="text" id="verifyCode" class="input-field" placeholder="1234" inputmode="numeric" autocomplete="one-time-code" maxlength="4" style="text-align: center; font-size: 22px; letter-spacing: 4px;">
                 </div>
                 <button class="glow-btn btn-green" onclick="verifyLoginCode()">Verify & Continue</button>
             </div>
@@ -854,6 +854,16 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const verifyInput = document.getElementById('verifyCode');
+            if (verifyInput) {
+                verifyInput.addEventListener('input', () => {
+                    verifyInput.value = verifyInput.value.replace(/\D/g, '').slice(0, 4);
+                });
+                verifyInput.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') verifyLoginCode();
+                });
+            }
+
             const dateSelect = document.getElementById('journalDateSelect');
             for (let i = 1; i <= 31; i++) {
                 const opt = document.createElement('option');
@@ -878,12 +888,10 @@
         }
 
         function goBack() {
-            if (screenHistory.length > 0) {
-                const previousScreen = screenHistory.pop();
-                showScreen(previousScreen);
-            } else {
-                navigateTo('screenHome');
-            }
+            // Always return directly to the DreamScaper welcome/home screen.
+            // Do not use the previous-screen history for the top-left arrow.
+            screenHistory.length = 0;
+            showScreen('screenHome');
         }
 
         function showScreen(screenId) {
@@ -916,18 +924,31 @@
         }
 
         function sendLoginCode() {
-            const email = document.getElementById('loginEmail').value;
+            const email = document.getElementById('loginEmail').value.trim();
             if(!email) return showToast("Please write down an email address first!");
+
             currentUser.email = email;
-            // Demo-only verification. A production app must send and verify this code on a server.
+
+            // Demo-only verification:
+            // This version has no email/SMS backend, so the generated
+            // code is displayed directly on the verification screen.
             currentUser.verificationCode = String(Math.floor(1000 + Math.random() * 9000));
+
+            const verificationMessage = document.getElementById('verificationMessage');
+            if (verificationMessage) {
+                verificationMessage.textContent =
+                    `Enter the code ${currentUser.verificationCode}`;
+            }
+
+            document.getElementById('verifyCode').value = '';
             navigateTo('screenCodeVerify');
-            showToast("Demo code: " + currentUser.verificationCode);
         }
 
         function verifyLoginCode() {
             const code = document.getElementById('verifyCode').value.trim();
-            if(!code) return showToast("Please input your verification code!");
+            if(!/^\d{4}$/.test(code)) {
+                return showToast("Please enter the 4-digit verification code!");
+            }
             if(code !== currentUser.verificationCode) {
                 return showToast("Incorrect verification code.");
             }
@@ -950,8 +971,13 @@
         }
 
         function loginSuccess() {
-            document.getElementById('welcomeMsg').textContent = `Welcome to Dreamscaper, ${currentUser.username}`;
-            document.getElementById('profileBadge').textContent = currentUser.username.charAt(0).toUpperCase();
+            // Start the logged-in session with a clean navigation history.
+            screenHistory.length = 0;
+
+            document.getElementById('welcomeMsg').textContent =
+                `Welcome to Dreamscaper, ${currentUser.username}`;
+            document.getElementById('profileBadge').textContent =
+                currentUser.username.charAt(0).toUpperCase();
 
             const savedBg = localStorage.getItem(`dreamscaper_bg_${currentUser.email}`);
             if (savedBg) {
@@ -1269,6 +1295,5 @@
             logs.scrollTop = logs.scrollHeight;
         }
     </script>
-    <script src="DreamScaper_arrow_fix.js"></script>
 </body>
 </html>
