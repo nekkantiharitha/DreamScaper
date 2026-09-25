@@ -158,24 +158,25 @@ textarea.input-field{resize:vertical;min-height:105px}
 
 <div class="input-group">
 <label>Email</label>
-<input id="email" class="input-field" type="email" placeholder="name@example.com">
+<input id="email" class="input-field" type="email" autocomplete="email" placeholder="name@example.com">
 </div>
 
-<button class="btn blue" onclick="sendCode()">Send Verification Code</button>
-<small class="muted">Demo login: the code appears on the next screen.</small>
+<div class="input-group">
+<label>Password</label>
+<input id="password" class="input-field" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+</div>
+
+<button class="btn blue" onclick="loginUser()">Log In</button>
+<button class="btn green" onclick="signupUser()">Create Account</button>
+<small class="muted">Use your DreamScaper email and password, or create a new account.</small>
 </div>
 </section>
 
 <section class="screen" id="verify">
 <div class="centered">
-<h1 style="margin-bottom:18px">Verify Account</h1>
-<p id="codeMessage" class="muted" style="margin-bottom:18px">Enter the code sent to your email</p>
-
-<div class="input-group">
-<input id="code" class="input-field" maxlength="4" inputmode="numeric" placeholder="1234" style="text-align:center;font-size:22px;letter-spacing:4px">
-</div>
-
-<button class="btn green" onclick="verify()">Verify & Continue</button>
+<h1 style="margin-bottom:18px">Account Verification</h1>
+<p class="muted" style="margin-bottom:18px">DreamScaper now uses your Supabase account for secure sign-in.</p>
+<button class="btn blue" onclick="show('login')">Back to Login</button>
 </div>
 </section>
 
@@ -513,6 +514,7 @@ const GROQ_API_KEY="";
 const DEFAULT_BG="background.jpg";
 
 let user={
+id:"",
 email:"",
 name:"",
 code:""
@@ -647,64 +649,164 @@ $('sidebar').classList.toggle('open');
 }
 
 
-function sendCode(){
+async function getProfile(){
+try{
+let {data,error}=await supabaseClient
+.from('profiles')
+.select('id,username,avatar_url')
+.eq('id',user.id)
+.maybeSingle();
 
-let e=$('email').value.trim();
+if(error) throw error;
+return data;
+}catch(e){
+console.error('Profile lookup failed:',e);
+return null;
+}
+}
+
+
+async function loginUser(){
+
+let e=$('email').value.trim().toLowerCase();
+let p=$('password').value;
 
 if(!/^\S+@\S+\.\S+$/.test(e))
 return toast('Please enter a valid email address.');
 
-user.email=e;
+if(!p)
+return toast('Please enter your password.');
 
-user.code=String(
-Math.floor(1000+Math.random()*9000)
-);
+let {data,error}=await supabaseClient.auth.signInWithPassword({
+email:e,
+password:p
+});
 
-$('codeMessage').textContent=
-`Enter the code ${user.code}`;
+if(error)
+return toast(error.message||'Login failed. Please check your details.');
 
-$('code').value='';
+user.id=data.user.id;
+user.email=data.user.email||e;
 
-navigateTo('verify');
+let profile=await getProfile();
 
+if(profile&&profile.username){
+user.name=profile.username;
+localStorage.setItem('dreamscaper_username_'+user.email,user.name);
+loginSuccess();
+return;
 }
 
+let oldName=localStorage.getItem('dreamscaper_username_'+user.email);
 
-function verify(){
+if(oldName){
 
-let c=$('code').value.trim();
+user.name=oldName;
 
-if(!/^\d{4}$/.test(c))
-return toast('Please enter the 4-digit verification code.');
-
-if(c!==user.code)
-return toast('Incorrect verification code.');
-
-let n=localStorage.getItem(
-'dreamscaper_username_'+user.email
+let {error:upErr}=await supabaseClient
+.from('profiles')
+.upsert(
+{
+id:user.id,
+username:oldName
+},
+{onConflict:'id'}
 );
 
-if(n){
-
-user.name=n;
+if(upErr)
+console.error('Profile sync failed:',upErr);
 
 loginSuccess();
 
 }else{
 
+$('usernameInput').value='';
+
 navigateTo('username');
 
-}
+toast('One last step: choose your DreamScaper username.');
 
 }
 
+}
 
-function saveUsername(){
+
+async function signupUser(){
+
+let e=$('email').value.trim().toLowerCase();
+let p=$('password').value;
+
+if(!/^\S+@\S+\.\S+$/.test(e))
+return toast('Please enter a valid email address.');
+
+if(p.length<8)
+return toast('Your password must be at least 8 characters.');
+
+let {data,error}=await supabaseClient.auth.signUp({
+email:e,
+password:p
+});
+
+if(error)
+return toast(error.message||'Could not create the account.');
+
+if(!data.user)
+return toast('The account could not be created. Please try again.');
+
+user.id=data.user.id;
+user.email=data.user.email||e;
+
+if(!data.session){
+return toast('Please check your email to confirm your account, then log in.');
+}
+
+$('usernameInput').value='';
+
+navigateTo('username');
+
+toast('✨ Account created! Choose your username.');
+
+}
+
+
+async function saveUsername(){
 
 let n=$('usernameInput').value.trim();
 
 if(n.length<2)
 return toast('Please enter a username.');
+
+if(n.length>30)
+return toast('Please keep your username under 30 characters.');
+
+let {data:existing,error:checkError}=await supabaseClient
+.from('profiles')
+.select('id')
+.ilike('username',n)
+.limit(1);
+
+if(checkError){
+console.error('Username check failed:',checkError);
+return toast('Could not check that username. Please try again.');
+}
+
+if(existing&&existing.some(x=>x.id!==user.id))
+return toast('That username is already taken. Please choose another.');
+
+let {error}=await supabaseClient
+.from('profiles')
+.upsert(
+{
+id:user.id,
+username:n
+},
+{onConflict:'id'}
+);
+
+if(error){
+console.error('Profile save failed:',error);
+return toast('Could not save your username. Please try again.');
+}
 
 user.name=n;
 
@@ -726,9 +828,10 @@ $('welcome').textContent=
 `Welcome to Dreamscaper, ${user.name}`;
 
 $('profileBadge').textContent=
-user.name[0].toUpperCase();
+(user.name||'U')[0].toUpperCase();
 
-let bg=localStorage.getItem(
+let bg=
+localStorage.getItem(
 'dreamscaper_bg_'+user.email
 );
 
@@ -737,6 +840,8 @@ $('bgLayer').style.backgroundImage=
 
 $('resetBg').style.display=
 bg?'block':'none';
+
+$('password').value='';
 
 show('home');
 
@@ -900,29 +1005,56 @@ stages[Math.min(++i,stages.length-1)];
 try{
 
 let prompt=[
+
 'Create a polished, detailed dreamscape image.',
+
 `dream: ${desc}`,
-keys?`key visual details: ${keys}`:'',
-setting?`time and setting: ${setting}`:'',
-objects?`characters and objects: ${objects}`:'',
+
+keys?
+`key visual details: ${keys}`:'',
+
+setting?
+`time and setting: ${setting}`:'',
+
+objects?
+`characters and objects: ${objects}`:'',
+
 `emotion: ${mood}`,
+
 `category: ${cat}`,
+
 `art style: ${style}`,
+
 'strong visual storytelling',
+
 'clear focal subject',
+
 'rich environmental detail',
+
 'layered foreground, middle ground and background',
+
 'cinematic composition',
+
 'atmospheric depth',
+
 'beautiful controlled lighting',
+
 'refined textures',
+
 'crisp details',
+
 'coherent anatomy and proportions',
+
 'detailed hair and clothing',
+
 'natural hands',
+
 'clean edges',
+
 'professional finished digital artwork',
+
 'no text, no captions, no watermark'
+
 ]
 .filter(Boolean)
 .join('. ');
@@ -951,24 +1083,38 @@ test.src=img;
 dreams.push({
 
 id:Date.now(),
+
 email:user.email,
+
 title,
+
 description:desc,
+
 keywords:keys,
+
 setting,
+
 objects,
+
 category:cat,
+
 mood,
+
 style,
+
 img,
+
 favorite:false,
+
 date:new Date().toISOString(),
+
 displayDate:new Date().toLocaleDateString()
 
 });
 
 
 save();
+
 
 [
 'dreamTitle',
@@ -1016,24 +1162,38 @@ f=$('filter').value,
 s=$('sort').value;
 
 let a=ud().filter(d=>
+
 (!q||
-[d.title,d.description,d.keywords,d.mood,d.category]
+[
+d.title,
+d.description,
+d.keywords,
+d.mood,
+d.category
+]
 .join(' ')
 .toLowerCase()
 .includes(q))
+
 &&
+
 (
 f==='all'||
 (f==='favorites'?d.favorite:d.category===f)
 )
+
 );
 
 a.sort((x,y)=>
+
 s==='title'
 ?x.title.localeCompare(y.title)
+
 :s==='old'
 ?new Date(x.date)-new Date(y.date)
+
 :new Date(y.date)-new Date(x.date)
+
 );
 
 let g=$('galleryGrid');
@@ -1059,8 +1219,13 @@ c.className='card';
 c.innerHTML=`
 
 <div class="thumb">
+
 <img src="${esc(d.img)}">
-<span class="fav">${d.favorite?'⭐':'☆'}</span>
+
+<span class="fav">
+${d.favorite?'⭐':'☆'}
+</span>
+
 </div>
 
 <div class="info">
@@ -1070,9 +1235,14 @@ ${esc(d.title)}
 </div>
 
 <div class="meta">
-${esc(d.category)} · ${esc(d.mood)}
+
+${esc(d.category)} ·
+${esc(d.mood)}
+
 <br>
+
 ${esc(d.displayDate||'')}
+
 </div>
 
 <div class="actions">
@@ -1194,7 +1364,9 @@ if(!confirm(
 ))
 return;
 
-dreams=dreams.filter(d=>d.id!==id);
+dreams=dreams.filter(
+d=>d.id!==id
+);
 
 save();
 
@@ -1256,9 +1428,11 @@ $('viewer').innerHTML=`
 <h2>${esc(d.title)}</h2>
 
 <div class="muted">
+
 ${esc(d.mood)} ·
 ${esc(d.category)} ·
 ${esc(d.displayDate||'')}
+
 </div>
 
 <div class="box">
@@ -1266,7 +1440,9 @@ ${esc(d.displayDate||'')}
 <b>Dream description</b>
 
 <p style="margin-top:7px;white-space:pre-wrap">
+
 ${esc(d.description)}
+
 </p>
 
 </div>
@@ -1363,11 +1539,17 @@ return toast(
 journals.push({
 
 id:Date.now(),
+
 email:user.email,
+
 title,
+
 date,
+
 mood:m,
+
 dream:d,
+
 thoughts:t
 
 });
@@ -1406,6 +1588,7 @@ return;
 
 }
 
+
 a.forEach(j=>{
 
 let e=document.createElement('div');
@@ -1417,11 +1600,16 @@ e.innerHTML=`
 <div class="entry-body">
 
 <div class="entry-title">
+
 ${esc(j.title)}
+
 </div>
 
 <div class="entry-meta">
-${esc(j.date)} · Mood: ${esc(j.mood)}
+
+${esc(j.date)} ·
+Mood: ${esc(j.mood)}
+
 </div>
 
 </div>
@@ -1452,13 +1640,18 @@ if(!j)return;
 $('viewer').innerHTML=`
 
 <div style="text-align:center;color:#ffeda6;font-size:13px">
+
 DREAMSCAPER JOURNAL
+
 </div>
 
 <h2>${esc(j.title)}</h2>
 
 <div class="muted">
-${esc(j.date)} · Mood: ${esc(j.mood)}
+
+${esc(j.date)} ·
+Mood: ${esc(j.mood)}
+
 </div>
 
 <div class="box">
@@ -1466,7 +1659,9 @@ ${esc(j.date)} · Mood: ${esc(j.mood)}
 <b>Dream description</b>
 
 <p style="margin-top:7px;white-space:pre-wrap">
+
 ${esc(j.dream)}
+
 </p>
 
 </div>
@@ -1476,7 +1671,9 @@ ${esc(j.dream)}
 <b>Personal thoughts</b>
 
 <p style="margin-top:7px;white-space:pre-wrap">
+
 ${esc(j.thoughts)}
+
 </p>
 
 </div>
@@ -1485,12 +1682,16 @@ ${esc(j.thoughts)}
 
 <button class="mini"
 onclick="renameJournal(${j.id})">
+
 ✏ Rename
+
 </button>
 
 <button class="mini"
 onclick="deleteJournal(${j.id})">
+
 🗑 Delete
+
 </button>
 
 </div>
@@ -1573,8 +1774,15 @@ toast('Journal page deleted.');
 function streak(){
 
 let dates=new Set([
-...ud().map(d=>d.date.slice(0,10)),
-...uj().map(j=>j.date)
+
+...ud().map(
+d=>d.date.slice(0,10)
+),
+
+...uj().map(
+j=>j.date
+)
+
 ]);
 
 let cur=new Date();
@@ -1610,22 +1818,31 @@ c=$('dailyCard');
 if(a.length){
 
 let d=
-a[Math.floor(Date.now()/86400000)%a.length];
+a[
+Math.floor(Date.now()/86400000)%a.length
+];
 
 c.innerHTML=`
 
 <div style="color:#ffeda6;font-size:13px">
+
 YOUR DREAM OF THE DAY
+
 </div>
 
 <h2 style="margin-top:5px">
+
 ${esc(d.title)}
+
 </h2>
 
 <img src="${esc(d.img)}">
 
 <div class="muted">
-${esc(d.mood)} · ${esc(d.category)}
+
+${esc(d.mood)} ·
+${esc(d.category)}
+
 </div>
 
 <button
@@ -1656,15 +1873,23 @@ let ideas=[
 c.innerHTML=`
 
 <div style="color:#ffeda6;font-size:13px">
+
 TODAY'S DREAM PROMPT
+
 </div>
 
 <h2 style="margin-top:8px">
-${ideas[Math.floor(Date.now()/86400000)%ideas.length]}
+
+${ideas[
+Math.floor(Date.now()/86400000)%ideas.length
+]}
+
 </h2>
 
 <p class="muted" style="margin:13px 0">
+
 Turn the idea into a DreamScape of your own.
+
 </p>
 
 <button
@@ -1754,7 +1979,7 @@ streak()+' 🔥';
 }
 
 
-function changeUsername(){
+async function changeUsername(){
 
 let n=prompt(
 'New username:',
@@ -1763,7 +1988,40 @@ user.name
 
 if(n&&n.trim().length>=2){
 
-user.name=n.trim();
+n=n.trim();
+
+if(n.length>30)
+return toast(
+'Please keep your username under 30 characters.'
+);
+
+let {data:existing,error:checkError}=await supabaseClient
+.from('profiles')
+.select('id')
+.ilike('username',n)
+.limit(1);
+
+if(checkError)
+return toast(
+'Could not check that username. Please try again.'
+);
+
+if(existing&&existing.some(x=>x.id!==user.id))
+return toast(
+'That username is already taken. Please choose another.'
+);
+
+let {error}=await supabaseClient
+.from('profiles')
+.update({username:n})
+.eq('id',user.id);
+
+if(error)
+return toast(
+'Could not update your username. Please try again.'
+);
+
+user.name=n;
 
 localStorage.setItem(
 'dreamscaper_username_'+user.email,
@@ -1790,7 +2048,9 @@ function exportJournal(){
 let a=uj();
 
 if(!a.length)
-return toast('Your journal is empty.');
+return toast(
+'Your journal is empty.'
+);
 
 let out=
 'DREAMSCAPER JOURNAL\n===================\n\n';
@@ -1822,10 +2082,12 @@ ${j.thoughts}
 });
 
 let u=URL.createObjectURL(
+
 new Blob(
 [out],
 {type:'text/plain'}
 )
+
 );
 
 let aEl=document.createElement('a');
@@ -1859,9 +2121,12 @@ m
 }
 
 
-function logout(){
+async function logout(){
+
+await supabaseClient.auth.signOut();
 
 user={
+id:'',
 email:'',
 name:'',
 code:''
@@ -1870,6 +2135,8 @@ code:''
 history.length=0;
 
 $('email').value='';
+
+$('password').value='';
 
 show('login');
 
@@ -1929,26 +2196,36 @@ try{
 let r=await fetch(
 'https://api.groq.com/openai/v1/chat/completions',
 {
+
 method:'POST',
+
 headers:{
-Authorization:`Bearer ${GROQ_API_KEY}`,
-'Content-Type':'application/json'
+
+Authorization:
+`Bearer ${GROQ_API_KEY}`,
+
+'Content-Type':
+'application/json'
+
 },
 
 body:JSON.stringify({
 
-model:'llama-3.3-70b-versatile',
+model:
+'llama-3.3-70b-versatile',
 
 messages:[
 
 {
 role:'system',
+
 content:
 'You are DreamScaper Companion, a gentle concise dream journaling assistant.'
 },
 
 {
 role:'user',
+
 content:text
 }
 
@@ -1982,36 +2259,97 @@ b.textContent=
 
 document.addEventListener(
 'DOMContentLoaded',
-()=>{
+async()=>{
 
-$('code').addEventListener(
-'input',
-()=>{
-$('code').value=
-$('code').value
-.replace(/\D/g,'')
-.slice(0,4);
-}
-);
-
-$('code').addEventListener(
+$('password').addEventListener(
 'keydown',
 e=>{
 if(e.key==='Enter')
-verify();
+loginUser();
 }
 );
 
 $('journalDate').value=
-new Date()
-.toISOString()
-.slice(0,10);
+new Date().toISOString().slice(0,10);
 
 setAtmosphere(
 localStorage.getItem(
 'dreamscaper_atmosphere'
 )||'dark'
 );
+
+let {data,error}=
+await supabaseClient.auth.getSession();
+
+if(error){
+
+console.error(
+'Session restore failed:',
+error
+);
+
+return;
+
+}
+
+if(data.session&&data.session.user){
+
+user.id=
+data.session.user.id;
+
+user.email=
+data.session.user.email||'';
+
+let profile=
+await getProfile();
+
+if(profile&&profile.username){
+
+user.name=
+profile.username;
+
+localStorage.setItem(
+'dreamscaper_username_'+user.email,
+user.name
+);
+
+loginSuccess();
+
+}else{
+
+let oldName=
+localStorage.getItem(
+'dreamscaper_username_'+user.email
+);
+
+if(oldName){
+
+user.name=oldName;
+
+let {error:upErr}=
+await supabaseClient
+.from('profiles')
+.upsert(
+{
+id:user.id,
+username:oldName
+},
+{onConflict:'id'}
+);
+
+if(upErr)
+console.error(
+'Profile sync failed:',
+upErr
+);
+
+loginSuccess();
+
+}
+
+}
+
+}
 
 }
 );
